@@ -1,0 +1,50 @@
+[
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/main.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/main.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/main.cpp",
+  "output": "CMakeFiles/code.dir/src/main.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/syntax.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/syntax.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/syntax.cpp",
+  "output": "CMakeFiles/code.dir/src/syntax.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/RE.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/RE.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/RE.cpp",
+  "output": "CMakeFiles/code.dir/src/RE.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/parser.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/parser.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/parser.cpp",
+  "output": "CMakeFiles/code.dir/src/parser.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/expr.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/expr.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/expr.cpp",
+  "output": "CMakeFiles/code.dir/src/expr.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/value.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/value.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/value.cpp",
+  "output": "CMakeFiles/code.dir/src/value.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/evaluation.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/evaluation.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/evaluation.cpp",
+  "output": "CMakeFiles/code.dir/src/evaluation.cpp.o"
+},
+{
+  "directory": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build",
+  "command": "/usr/bin/c++   -std=gnu++11 -g -o CMakeFiles/code.dir/src/Def.cpp.o -c /mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/Def.cpp",
+  "file": "/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/src/Def.cpp",
+  "output": "CMakeFiles/code.dir/src/Def.cpp.o"
+}
+]
