@@ -208,7 +208,7 @@ Syntax readItem(std::istream &is) {
 
 Syntax readList(std::istream &is) {
     List *stx = new List();
-    while (readSpace(is).peek() != ')' && readSpace(is).peek() != ')')
+    while (readSpace(is).peek() != ')' && readSpace(is).peek() != ']')//这里将)改成]
         stx->stxs.push_back(readItem(is));
     is.get(); // ')'
     return Syntax(stx);
