@@ -117,7 +117,7 @@ Value IntegerV(int n) {
 
 // Rational
 // Helper function to calculate greatest common divisor
-int gcd(int a, int b) {
+static int gcd(int a, int b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
     while (b != 0) {
@@ -126,7 +126,7 @@ int gcd(int a, int b) {
         a = temp;
     }
     return a;
-}//将static移除了
+}
 
 Rational::Rational(int num, int den) : ValueBase(V_RATIONAL) {
     if (den == 0) {

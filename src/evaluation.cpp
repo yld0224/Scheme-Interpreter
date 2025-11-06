@@ -137,7 +137,7 @@ Value Var::eval(Assoc &e) {
                     return ptr->eval(e);
                 }if(it->first==E_DISPLAY){
                     auto ptr=dynamic_cast<Display*>(it->second.first.get());
-                    return ptr->eval(e);//这里的实现可能有问题，
+                    return ptr->eval(e);
                 }if(it->first==E_PLUS){
                     auto ptr=dynamic_cast<PlusVar*>(it->second.first.get());
                     return ptr->eval(e);
@@ -167,7 +167,17 @@ Value Var::eval(Assoc &e) {
     return matched_value;
 }
 
-extern int gcd(int a,int b);
+static int gcd(int a, int b) {
+    if (a < 0) a = -a;
+    if (b < 0) b = -b;
+    while (b != 0) {
+        int temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}
+
 Value Plus::evalRator(const Value &rand1, const Value &rand2) {
     ValueType type1=rand1->v_type;
     ValueType type2=rand2->v_type;
@@ -829,11 +839,19 @@ Value Cdr::evalRator(const Value &rand) { // cdr
 }
 
 Value SetCar::evalRator(const Value &rand1, const Value &rand2) { // set-car!
-    //TODO: To complete the set-car! logic
+    if(rand1->v_type!=V_PAIR){throw RuntimeError("SetCar!:required pair");}
+    auto ptr=dynamic_cast<Pair*>(rand1.get());
+    if(ptr==nullptr){throw RuntimeError("SetCar!:Invalid Pair");}
+    ptr->car=rand2;
+    return VoidV();
 }
 
 Value SetCdr::evalRator(const Value &rand1, const Value &rand2) { // set-cdr!
-   //TODO: To complete the set-cdr! logic
+   if(rand1->v_type!=V_PAIR){throw RuntimeError("SetCdr!:required pair");}
+    auto ptr=dynamic_cast<Pair*>(rand1.get());
+    if(ptr==nullptr){throw RuntimeError("SetCdr!:Invalid Pair");}
+    ptr->cdr=rand2;
+    return VoidV();
 }
 
 Value IsEq::evalRator(const Value &rand1, const Value &rand2) { // eq?
@@ -1037,7 +1055,18 @@ Value Let::eval(Assoc &env) {
 }
 
 Value Letrec::eval(Assoc &env) {
-    //TODO: To complete the letrec logic
+    if (bind.empty()) {
+        return body->eval(env);
+    }
+    Assoc new_env = env;
+    for (auto& binding : bind) {
+        new_env = extend(binding.first, VoidV(), new_env);
+    }
+    for (auto& binding : bind) {
+        Value value = binding.second->eval(new_env);
+        modify(binding.first, value, new_env);
+    }
+    return body->eval(new_env);
 }
 
 Value Set::eval(Assoc &env) {
