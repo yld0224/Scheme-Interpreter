@@ -185,7 +185,7 @@ scm> (eq? (quote ()) (quote ()))
 #t
 scm> (eq? (quote (1 2 3)) (quote (1 2 3)))
 #f
-scm> (define str "hello")
+scm> (define str "hello")/*这里报错，需要修改*/
 scm> (eq? str str)
 #t
 scm> (eq? "hello" "hello")
@@ -292,7 +292,7 @@ scm> (eq? 1 1)
 ;;Value: 5
 (cdr (cons #t (void)))
 ;;Value: #<void>
-(cdr (quote ((ll . lr) . (rl . rr))))
+(cdr (quote ((ll . lr) . (rl . rr))))/*这里错了,需要修改,怀疑是quote的问题*/
 ;;Value: (rl . rr)
 (car (quote (+ - *)))
 ;;Value: +
@@ -312,8 +312,6 @@ scm> (eq? 1 1)
 (list 1 2)
 ;Value: (1 2)
 (list? '())
-;Value: #t
-(list? '(1 2 3))
 ;Value: #t
 (list? '(1 2 3))
 ;Value: #t
@@ -354,16 +352,16 @@ scm> (eq? 1 1)
 ```scheme
 (quote (1 2 . 3))                     ;;Value:(1 2 . 3)
 (quote (1 2 3))                       ;;Value:(1 2 3)
-(quote (1 . (2 . 3)))                 ;;Value:(1 2 . 3)
-(quote (1 . (2 . (3 . ()))))          ;;Value:(1 2 3)
+(quote (1 . (2 . 3)))                 ;;Value:(1 2 . 3)/*这里错了*/
+(quote (1 . (2 . (3 . ()))))          ;;Value:(1 2 3)/*这里错了*/
 (quote (quote (1 2)))                 ;;Value:(quote (1 2))
 (car (quote ((1 . 2) 3 . 4)))         ;;Value:(1 . 2)
 (cdr (quote ((1 . 2 ) 3 . 4)))        ;;Value:(3 . 4)
-(quote (quote () 1 2 . (4 . 2)))      ;;Value:(quote () 1 2 4 . 2)
+(quote (quote () 1 2 . (4 . 2)))      ;;Value:(quote () 1 2 4 . 2)/*这里错了*/
 (car (quote (quote () 1 2 . (4 . 2))));;Value:quote
 (cdr (quote (quote () 1 2 . (4 . 2))));;Value:(() 1 2 4 . 2)
 ```
-
+//quote对于pair的处理存在问题，待修改
 ----
 
 ### Subtask 3：顺序执行，布尔值处理与条件语句
@@ -482,7 +480,7 @@ scm> (eq? 1 1)
 在 `Subtask 4` 中，你将会接触到 `Procedure` 类型,这一部分在理解上会有较大难度，请仔细阅读本节内容与前文“解释器简明教程”一节.
 
 #### 变量 (`var`)
-
+/*关键问题所在，var的eval处理不正确*/
 在本节我们认为，任何 `SymbolSyntax` 都可以被解释成 `var`，包括 `primitives` 与 `reserve_words` 中的字符串，例如 `+` 与 `quote` 也可以是变量名 (注意这仅限于 `Var::eval()`，后文的 `Define`、变量绑定一节对此的要求均有所差别)；这里我们要求：
 
 1. 变量名可以包含大小写字母（`Scheme` 对大小写敏感）、数字以及 ``?!.+-*/<=>:$%&_~@`` 中的字符。在本次大作业中，我们规定：

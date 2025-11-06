@@ -153,6 +153,85 @@ Expr List::parse(Assoc &env) {
                 return Expr(new Not(parameters[0]));
             }
             else {throw "Wrong number for not";}
+        }else if (op_type == E_CONS) {
+            if(parameters.size()==2){
+                return Expr(new Cons(parameters[0],parameters[1]));
+            }
+            else {throw "Wrong number for Cons";}
+        }else if (op_type == E_CAR) {
+            if(parameters.size()==1){
+                return Expr(new Car(parameters[0]));
+            }
+            else {throw "Wrong number for Car";}
+        }else if (op_type == E_CDR) {
+            if(parameters.size()==1){
+                return Expr(new Cdr(parameters[0]));
+            }
+            else {throw "Wrong number for Cdr";}
+        }else if (op_type == E_LIST) {
+            return Expr(new ListFunc(parameters));
+        }else if (op_type == E_SETCAR) {
+            if(parameters.size()==2){
+                return Expr(new SetCar(parameters[0],parameters[1]));
+            }
+            else {throw "Wrong number for SetCar";}
+        }else if (op_type == E_SETCDR) {
+            if(parameters.size()==2){
+                return Expr(new SetCdr(parameters[0],parameters[1]));
+            }
+            else {throw "Wrong number for SetCdr";}
+        }else if (op_type == E_EQQ) {
+            if(parameters.size()==2){
+                return Expr(new IsEq(parameters[0],parameters[1]));
+            }
+            else {throw "Wrong number for IsEq";}
+        }else if (op_type == E_BOOLQ) {
+            if(parameters.size()==1){
+                return Expr(new IsBoolean(parameters[0]));
+            }
+            else {throw "Wrong number for IsBoolean";}
+        }else if (op_type == E_INTQ) {
+            if(parameters.size()==1){
+                return Expr(new IsFixnum(parameters[0]));
+            }
+            else {throw "Wrong number for IsInt";}
+        }else if (op_type == E_NULLQ) {
+            if(parameters.size()==1){
+                return Expr(new IsNull(parameters[0]));
+            }
+            else {throw "Wrong number for IsNull";}
+        }else if (op_type == E_PAIRQ) {
+            if(parameters.size()==1){
+                return Expr(new IsPair(parameters[0]));
+            }
+            else {throw "Wrong number for IsPair";}
+        }else if (op_type == E_PROCQ) {
+            if(parameters.size()==1){
+                return Expr(new IsProcedure(parameters[0]));
+            }
+            else {throw "Wrong number for IsProcedure";}
+        }else if (op_type == E_SYMBOLQ) {
+            if(parameters.size()==1){
+                return Expr(new IsSymbol(parameters[0]));
+            }
+            else {throw "Wrong number for IsSymbol";}
+        }else if (op_type == E_LISTQ) {
+            if(parameters.size()==1){
+                return Expr(new IsList(parameters[0]));
+            }
+            else {throw "Wrong number for IsList";}
+        }else if (op_type == E_STRINGQ) {
+            if(parameters.size()==1){
+                return Expr(new IsString(parameters[0]));
+            }
+            else {throw "Wrong number for IsString";}
+        }else if (op_type == E_DISPLAY) {
+           if(parameters.size()!=1){throw RuntimeError("Display: 1 param needed");}
+           return Expr(new Display(parameters[0]));
+        }else if (op_type == E_VOID) {
+           return Expr(new MakeVoid());
+        }else if (op_type == E_EXIT) {
+            return Expr(new Exit());
         }else {
             throw RuntimeError ("Unknown primitive:" + op);
         }
@@ -279,6 +358,10 @@ Expr List::parse(Assoc &env) {
             Expr value =stxs[2]->parse(env);
             return Expr(new Set(varSym->s, value));
         }
+        if(op=="let"){
+            throw RuntimeError("Undone yet");
+        }
+        if(op=="letrec"){throw RuntimeError("Undone yet");}
         throw RuntimeError("Unknown reserved word: " + op);
     }//还有几个没有完成，待修改
         vector<Expr> parameters;

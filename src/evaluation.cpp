@@ -945,7 +945,7 @@ Value Quote::eval(Assoc& e) {
             current = PairV(element, current);
         }
         return current;
-    }
+    }//这么quote依然存在问题，所以选择直接修改pair的显示方法
     throw RuntimeError("Unsupported syntax in quote");
 }
 
