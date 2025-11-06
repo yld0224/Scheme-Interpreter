@@ -46,24 +46,34 @@ bool isExplicitVoidCall(Expr expr) {
 }
 
 void REPL(){
-    // read - evaluation - print loop
     Assoc global_env = empty();
     while (1){
         #ifndef ONLINE_JUDGE
             std::cout << "scm> ";
         #endif
-        Syntax stx = readSyntax(std :: cin); // read
+        Syntax stx = readSyntax(std :: cin);
         try{
-            Expr expr = stx -> parse(global_env); // parse
-            // stx -> show(std :: cout); // syntax print
+            std::cout << "DEBUG: Syntax parsed" << std::endl;
+            Expr expr = stx -> parse(global_env);
+            std::cout << "DEBUG: Expression parsed" << std::endl;
             Value val = expr -> eval(global_env);
+            std::cout << "DEBUG: Evaluation completed" << std::endl;
+            
             if (val -> v_type == V_TERMINATE)
                 break;
-            val -> show(std :: cout); // value print
+                
+            std::cout << "DEBUG: Showing value: ";
+            val -> show(std :: cout);
+            std::cout << std::endl;
         }
         catch (const RuntimeError &RE){
-            // std :: cout << RE.message();
-            std :: cout << "RuntimeError";
+            std::cout << "RuntimeError: " << RE.message() << std::endl;
+        }
+        catch (const std::exception &e) {
+            std::cout << "Std exception: " << e.what() << std::endl;
+        }
+        catch (...) {
+            std::cout << "Unknown exception" << std::endl;
         }
         puts("");
     }

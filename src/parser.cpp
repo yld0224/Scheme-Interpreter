@@ -56,7 +56,7 @@ Expr FalseSyntax::parse(Assoc &env) {
 
 Expr List::parse(Assoc &env) {
     if (stxs.empty()) {
-        return Expr(new Quote(Syntax(new List())));
+        return Expr(new ListFunc(vector<Expr>()));
     }
     SymbolSyntax *id = dynamic_cast<SymbolSyntax*>(stxs[0].get());
     if (id == nullptr) {
@@ -86,28 +86,36 @@ Expr List::parse(Assoc &env) {
         }
         ExprType op_type = primitives[op];
         if (op_type == E_PLUS) {
-            if (parameters.size() == 2) {
+            if(parameters.empty()){return Expr(new Fixnum(0));}
+            else if(parameters.size()==1){return Expr(new Plus(parameters[0],new Fixnum(0)));}
+            else if (parameters.size() == 2) {
                 return Expr(new Plus(parameters[0], parameters[1])); 
-            } else {
-                throw RuntimeError("Wrong number of arguments for +");
+            } else if(parameters.size()>2){
+                return Expr(new PlusVar(parameters));
             }
         } else if (op_type == E_MINUS) {
-           if (parameters.size() == 2) {
+            if(parameters.empty()){throw RuntimeError("Minus: num needed");}
+            else if(parameters.size()==1){return Expr(new Minus(new Fixnum(0),parameters[0]));}
+            else if (parameters.size() == 2) {
                 return Expr(new Minus(parameters[0], parameters[1])); 
-            } else {
-                throw RuntimeError("Wrong number of arguments for -");
+            } else if(parameters.size()>2){
+                return Expr(new MinusVar(parameters));
             }
         } else if (op_type == E_MUL) {
-           if (parameters.size() == 2) {
+           if(parameters.empty()){return Expr(new Fixnum(1));}
+            else if(parameters.size()==1){return Expr(new Mult(new Fixnum(1),parameters[0]));}
+            else if (parameters.size() == 2) {
                 return Expr(new Mult(parameters[0], parameters[1])); 
-            } else {
-                throw RuntimeError("Wrong number of arguments for *");
+            } else if(parameters.size()>2){
+                return Expr(new MultVar(parameters));
             }
         }  else if (op_type == E_DIV) {
-           if (parameters.size() == 2) {
+            if(parameters.empty()){throw RuntimeError("Div: num needed");}
+            else if(parameters.size()==1){return Expr(new Div(new Fixnum(1),parameters[0]));}
+            else if (parameters.size() == 2) {
                 return Expr(new Div(parameters[0], parameters[1])); 
-            } else {
-                throw RuntimeError("Wrong number of arguments for /");
+            } else if(parameters.size()>2){
+                return Expr(new DivVar(parameters));
             }
         } else if (op_type == E_MODULO) {
             if (parameters.size() != 2) {
@@ -117,19 +125,24 @@ Expr List::parse(Assoc &env) {
         } else if (op_type == E_LIST) {
             return Expr(new ListFunc(parameters));
         } else if (op_type == E_LT) {
-            if(parameters.size()==2){return Expr(new Less(parameters[0],parameters[1]));}
+            if(parameters.size()<2){throw RuntimeError("More vars needed");}
+            else if(parameters.size()==2){return Expr(new Less(parameters[0],parameters[1]));}
             else {return Expr(new LessVar(parameters));}
         } else if (op_type == E_LE) {
-            if(parameters.size()==2){return Expr(new LessEq(parameters[0],parameters[1]));}
+            if(parameters.size()<2){throw RuntimeError("More vars needed");}
+            else if(parameters.size()==2){return Expr(new LessEq(parameters[0],parameters[1]));}
             return Expr(new LessEqVar(parameters));
         } else if (op_type == E_EQ) {
-            if(parameters.size()==2){return Expr(new Equal(parameters[0],parameters[1]));}
+            if(parameters.size()<2){throw RuntimeError("More vars needed");}
+            else if(parameters.size()==2){return Expr(new Equal(parameters[0],parameters[1]));}
             return Expr(new EqualVar(parameters));
         } else if (op_type == E_GE) {
-            if(parameters.size()==2){return Expr(new GreaterEq(parameters[0],parameters[1]));}
-           return Expr(new GreaterEqVar(parameters));
+            if(parameters.size()<2){throw RuntimeError("More vars needed");}
+            else if(parameters.size()==2){return Expr(new GreaterEq(parameters[0],parameters[1]));}
+            return Expr(new GreaterEqVar(parameters));
         } else if (op_type == E_GT) {
-            if(parameters.size()==2){return Expr(new Greater(parameters[0],parameters[1]));}
+            if(parameters.size()<2){throw RuntimeError("More vars needed");}
+            else if(parameters.size()==2){return Expr(new Greater(parameters[0],parameters[1]));}
             return Expr(new GreaterVar(parameters));
         } else if (op_type == E_AND) {
             return Expr(new AndVar(parameters));
@@ -146,11 +159,13 @@ Expr List::parse(Assoc &env) {
     }
 
     if (reserved_words.count(op) != 0) {
-        vector<Expr> parameters;
-        for(int i=1;i<stxs.size();++i){
-            parameters.push_back(stxs[i]->parse(env));
+        if(op=="begin"){
+            vector<Expr> parameters;
+            for(int i=1;i<stxs.size();++i){
+                parameters.push_back(stxs[i]->parse(env));
+            }
+            return Expr(new Begin(parameters));
         }
-        if(op=="begin"){return Expr(new Begin(parameters));}
         if(op=="quote"){
             if (stxs.size() != 2) {
                 throw RuntimeError("quote: requires 1 argument");
@@ -158,14 +173,27 @@ Expr List::parse(Assoc &env) {
             return Expr(new Quote(stxs[1]));
         }
         if(op=="if"){
-            if (stxs.size() != 4) {
-                throw RuntimeError("if: requires 3 argument");
+            if (stxs.size() <3||stxs.size()>4) {
+                throw RuntimeError("if: requires 2 or 3 argument");
             }
-            return Expr(new If(parameters[1],parameters[2],parameters[3]));
+            vector<Expr> parameters;
+            for(int i=1;i<stxs.size();++i){
+                parameters.push_back(stxs[i]->parse(env));
+            }
+            Expr alter = stxs.size()==4 ? parameters[2] : Expr(new MakeVoid());
+            return Expr(new If(parameters[0],parameters[1],alter));
         }
         if(op=="cond"){
             vector<vector<Expr>> tmp;
-            tmp.emplace_back(parameters);
+            for (int i=1;i<stxs.size();++i){
+                auto clause_list=dynamic_cast<List*>(stxs[i].get());
+                if(clause_list==nullptr){throw RuntimeError("cond:list needed");}
+                vector<Expr> clauses;
+                for(auto& item : clause_list->stxs){
+                    clauses.push_back(item->parse(env));
+                }
+                tmp.push_back(clauses);
+            }
             return Expr(new Cond(tmp));
         }
         if(op=="lambda"){
@@ -197,11 +225,16 @@ Expr List::parse(Assoc &env) {
             return Expr(new Lambda(params, body));
         }
         if(op=="define"){
-            if(stxs.size()!=3){
-                throw RuntimeError("define: requires 2 augments");
+            if(stxs.size()<3){
+                throw RuntimeError("define: requires at least 2 augments");
             }
             auto varSym = dynamic_cast<SymbolSyntax*>(stxs[1].get());
             if(varSym!=nullptr){
+                vector<Expr> parameters;
+                for(int i=1;i<stxs.size();++i){
+                    parameters.push_back(stxs[i]->parse(env));
+                }
+                if(parameters.size()!=1){throw RuntimeError("define: only 1 var can be defined");}
                 return Expr(new Define(varSym->s,parameters[1]));
             }//定义的是一个变量
             else{
@@ -221,20 +254,30 @@ Expr List::parse(Assoc &env) {
                     }
                     params.push_back(paramSym->s);
                 }
-                Expr body = stxs[2]->parse(env);
+                vector<Expr> bodyExprs;
+                for(int i=2;i<stxs.size();++i){
+                    bodyExprs.push_back(stxs[i]->parse(env));
+                }
+                Expr body(nullptr);
+                if(bodyExprs.size()==1){
+                    body=bodyExprs[0];
+                }else{
+                    body=Expr(new Begin(bodyExprs));
+                }
                 Expr lambda = Expr(new Lambda(params, body));
                 return Expr(new Define(funcNameSym->s, lambda));
             }//定义的是一个函数
         }
         if(op=="set!"){
-            if (parameters.size() != 2) {
+            if (stxs.size() != 3) {
                 throw RuntimeError("set!: requires 2 arguments");
             }
-            auto varSym = dynamic_cast<Var*>(parameters[0].get());
+            auto varSym = dynamic_cast<SymbolSyntax*>(stxs[1].get());
             if (varSym==nullptr) {
                 throw RuntimeError("set!: first argument must be a variable");
             }
-            return Expr(new Set(varSym->x, parameters[1]));
+            Expr value =stxs[2]->parse(env);
+            return Expr(new Set(varSym->s, value));
         }
         throw RuntimeError("Unknown reserved word: " + op);
     }//还有几个没有完成，待修改
