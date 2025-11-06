@@ -992,18 +992,42 @@ Value If::eval(Assoc &e) {
 }
 
 Value Cond::eval(Assoc &env) {
-    if(clauses.empty()){return VoidV();}
-    for(int j=0;j<clauses.size()-1;++j){
-        if(clauses[j].empty()){continue;}
-        for(int i=0;i<clauses[j].size()-1;++i){
-            Value val=clauses[j][i]->eval(env);
-            auto ptr=dynamic_cast<Boolean*>(val.get());
-            if(ptr==nullptr||ptr->b==true){
-                return clauses[j].back()->eval(env);
+    if (clauses.empty()) {
+        return VoidV();
+    }
+    for (auto& clause : clauses) {
+        if (clause.empty()) {
+            continue;
+        }
+        bool is_else = false;
+        if (auto var = dynamic_cast<Var*>(clause[0].get())) {
+            if (var->x == "else") {
+                is_else = true;
+            }
+        }
+        bool condition = is_else;
+        Value condition_value(nullptr);
+        if (is_else==false) {
+            condition_value = clause[0]->eval(env);
+            condition = true;
+            auto ptr=dynamic_cast<Boolean*>(condition_value.get());
+            if(ptr!=nullptr){
+                if(ptr->b==false){condition=false;}
+            }
+        }
+        if (condition) {
+            if (clause.size() == 1) {
+                return is_else ? VoidV() : condition_value;
+            } else {
+                Value result = VoidV();
+                for (size_t i = 1; i < clause.size(); ++i) {
+                    result = clause[i]->eval(env);
+                }
+                return result;
             }
         }
     }
-    return clauses.back().back()->eval(env);
+    return VoidV();
 }
 
 Value Lambda::eval(Assoc &env) { 
@@ -1032,6 +1056,9 @@ Value Apply::eval(Assoc &env) {
     }
     return proc->e->eval(new_env);
 }
+
+
+
 
 Value Define::eval(Assoc &env) {
     if (primitives.count(var)) {

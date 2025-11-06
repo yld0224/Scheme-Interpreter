@@ -313,7 +313,7 @@ Expr List::parse(Assoc &env) {
                 for(int i=1;i<stxs.size();++i){
                     parameters.push_back(stxs[i]->parse(env));
                 }
-                if(parameters.size()!=1){throw RuntimeError("define: only 1 var can be defined");}
+                if(parameters.size()!=2){throw RuntimeError("define: only 1 var can be defined");}
                 return Expr(new Define(varSym->s,parameters[1]));
             }//定义的是一个变量
             else{
