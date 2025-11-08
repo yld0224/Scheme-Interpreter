@@ -59,6 +59,14 @@ Expr List::parse(Assoc &env) {
         return Expr(new ListFunc(vector<Expr>()));
     }
     SymbolSyntax *id = dynamic_cast<SymbolSyntax*>(stxs[0].get());
+
+    if(id!=nullptr){
+        if(id->s=="void"){return Expr(new MakeVoid());}
+    }
+    StringSyntax *ptr=dynamic_cast<StringSyntax*>(stxs[0].get());
+     if(ptr!=nullptr){
+        if(ptr->s=="void"){return Expr(new MakeVoid());}
+    }
     
     if (id == nullptr) {
         vector<Expr> parameters;
