@@ -188,6 +188,9 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){
+            throw(RuntimeError("Division by zero"));
+        }
         int a=ptr1->numerator*ptr2->denominator+ptr1->denominator*ptr2->numerator;
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
@@ -203,6 +206,7 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw(RuntimeError("Division by zero"));}
         int a=ptr1->n*ptr2->denominator+ptr2->numerator;
         int b=ptr2->denominator;
         int g=gcd(a,b);
@@ -212,6 +216,7 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw(RuntimeError("Division by zero"));}
         int a=ptr2->n*ptr1->denominator+ptr1->numerator;
         int b=ptr1->denominator;
         int g=gcd(a,b);
@@ -219,7 +224,7 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
         return RationalV(a,b);
     }
 }
-Value plus(const Value &rand1,const Value &rand2){
+Value plus(const Value &rand1, const Value &rand2) {
     ValueType type1=rand1->v_type;
     ValueType type2=rand2->v_type;
     if((type1!=V_RATIONAL&&type1!=V_INT)||(type2!=V_RATIONAL&&type2!=V_INT))
@@ -229,6 +234,9 @@ Value plus(const Value &rand1,const Value &rand2){
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){
+            throw(RuntimeError("Division by zero"));
+        }
         int a=ptr1->numerator*ptr2->denominator+ptr1->denominator*ptr2->numerator;
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
@@ -244,6 +252,7 @@ Value plus(const Value &rand1,const Value &rand2){
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw(RuntimeError("Division by zero"));}
         int a=ptr1->n*ptr2->denominator+ptr2->numerator;
         int b=ptr2->denominator;
         int g=gcd(a,b);
@@ -253,13 +262,14 @@ Value plus(const Value &rand1,const Value &rand2){
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw(RuntimeError("Division by zero"));}
         int a=ptr2->n*ptr1->denominator+ptr1->numerator;
         int b=ptr1->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
         return RationalV(a,b);
     }
-}//用于多参数的plus
+}
 
 Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
     ValueType type1=rand1->v_type;
@@ -271,6 +281,7 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->numerator*ptr2->denominator-ptr1->denominator*ptr2->numerator;
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
@@ -286,6 +297,7 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->n*ptr2->denominator-ptr2->numerator;
         int b=ptr2->denominator;
         int g=gcd(a,b);
@@ -295,6 +307,7 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr2->n*ptr1->denominator-ptr1->numerator;
         int b=ptr1->denominator;
         int g=gcd(a,b);
@@ -312,6 +325,7 @@ Value minus(const Value &rand1, const Value &rand2) { // -
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->numerator*ptr2->denominator-ptr1->denominator*ptr2->numerator;
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
@@ -327,6 +341,7 @@ Value minus(const Value &rand1, const Value &rand2) { // -
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->n*ptr2->denominator-ptr2->numerator;
         int b=ptr2->denominator;
         int g=gcd(a,b);
@@ -336,6 +351,7 @@ Value minus(const Value &rand1, const Value &rand2) { // -
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr2->n*ptr1->denominator-ptr1->numerator;
         int b=ptr1->denominator;
         int g=gcd(a,b);
@@ -354,6 +370,7 @@ Value Mult::evalRator(const Value &rand1, const Value &rand2) { // *
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->numerator*ptr2->numerator;
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
@@ -369,6 +386,7 @@ Value Mult::evalRator(const Value &rand1, const Value &rand2) { // *
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->n*ptr2->numerator;
         int b=ptr2->denominator;
         int g=gcd(a,b);
@@ -379,6 +397,7 @@ Value Mult::evalRator(const Value &rand1, const Value &rand2) { // *
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr2->n*ptr1->numerator;
         int b=ptr1->denominator;
         int g=gcd(a,b);
@@ -397,6 +416,7 @@ Value mult(const Value &rand1, const Value &rand2) { // *
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->numerator*ptr2->numerator;
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
@@ -412,6 +432,7 @@ Value mult(const Value &rand1, const Value &rand2) { // *
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->n*ptr2->numerator;
         int b=ptr2->denominator;
         int g=gcd(a,b);
@@ -422,6 +443,7 @@ Value mult(const Value &rand1, const Value &rand2) { // *
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr2->n*ptr1->numerator;
         int b=ptr1->denominator;
         int g=gcd(a,b);
@@ -440,6 +462,7 @@ Value Div::evalRator(const Value &rand1, const Value &rand2) { // /
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->numerator*ptr2->denominator;
         int b=ptr1->denominator*ptr2->numerator;
         int g=gcd(a,b);
@@ -458,6 +481,7 @@ Value Div::evalRator(const Value &rand1, const Value &rand2) { // /
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->n*ptr2->denominator;
         int b=ptr2->numerator;
         int g=gcd(a,b);
@@ -468,6 +492,7 @@ Value Div::evalRator(const Value &rand1, const Value &rand2) { // /
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr2->n*ptr1->denominator;
         int b=ptr1->numerator;
         if(a==0){throw(RuntimeError("Division by zero"));}
@@ -486,6 +511,7 @@ Value div(const Value &rand1, const Value &rand2) { // /
     else if(type1==V_RATIONAL&&type2==V_RATIONAL){
         auto ptr1=dynamic_cast<Rational*>(rand1.get());
         auto ptr2=dynamic_cast<Rational*>(rand2.get());
+        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->numerator*ptr2->denominator;
         int b=ptr1->denominator*ptr2->numerator;
         int g=gcd(a,b);
@@ -504,6 +530,7 @@ Value div(const Value &rand1, const Value &rand2) { // /
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
         auto ptr2=static_cast<Rational*>(rand2.get());
+        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr1->n*ptr2->denominator;
         int b=ptr2->numerator;
         int g=gcd(a,b);
@@ -514,6 +541,7 @@ Value div(const Value &rand1, const Value &rand2) { // /
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
         auto ptr2=static_cast<Integer*>(rand2.get());
+        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
         int a=ptr2->n*ptr1->denominator;
         int b=ptr1->numerator;
         if(a==0){throw(RuntimeError("Division by zero"));}
@@ -536,7 +564,13 @@ Value Modulo::evalRator(const Value &rand1, const Value &rand2) { // modulo
 
 Value PlusVar::evalRator(const std::vector<Value> &args) {
     if(args.size()==0){return IntegerV(0);}
-    else if(args.size()==1){return args[0];}
+    else if(args.size()==1){
+        auto ptr=dynamic_cast<Rational*>(args[0].get());
+        if(ptr!=nullptr){
+            if(ptr->denominator==0){throw RuntimeError("Division by zero");}
+        }
+        return args[0];
+    }
     else if(args.size()==2){return plus(args[0],args[1]);}
     else {
         Value sum=plus(args[0],args[1]);
@@ -556,6 +590,7 @@ Value MinusVar::evalRator(const std::vector<Value> &args) {
         }
         else{
             auto ptr=dynamic_cast<Rational*>(args[0].get());
+            if(ptr->denominator==0){throw RuntimeError("Division by zero");}
             return RationalV(-(ptr->numerator),ptr->denominator);
         }
     }
@@ -571,7 +606,13 @@ Value MinusVar::evalRator(const std::vector<Value> &args) {
 
 Value MultVar::evalRator(const std::vector<Value> &args) {
     if(args.size()==0){return IntegerV(1);} // * with multiple args
-    else if(args.size()==1){return args[0];}
+    else if(args.size()==1){
+        auto ptr=dynamic_cast<Rational*>(args[0].get());
+        if(ptr!=nullptr){
+            if(ptr->denominator==0){throw RuntimeError("Division by zero");}
+        }
+        return args[0];
+    }
     else if(args.size()==2){return mult(args[0],args[1]);}
     else {
         Value sum=mult(args[0],args[1]);
@@ -584,7 +625,17 @@ Value MultVar::evalRator(const std::vector<Value> &args) {
 
 Value DivVar::evalRator(const std::vector<Value> &args) {
     if(args.size()==0){throw "Runtime Error";} // / with multiple args
-    else if(args.size()==1){return div(IntegerV(1),args[0]);}
+    else if(args.size()==1){
+        auto ptr=dynamic_cast<Rational*>(args[0].get());
+        if(ptr!=nullptr){
+            if(ptr->denominator==0){throw RuntimeError("Division by zero");}
+        }
+        auto ptr1=dynamic_cast<Integer*>(args[0].get());
+        if(ptr1!=nullptr){
+            if(ptr1->n==0){throw RuntimeError("Division by zero");}
+        }
+        return div(IntegerV(1),args[0]);
+    }
     else if(args.size()==2){return div(args[0],args[1]);}
     else {
         Value sum=div(args[0],args[1]);
@@ -914,39 +965,73 @@ Value Begin::eval(Assoc &e) {
     }
     return result;
 }
-
-Value Quote::eval(Assoc& e) {
-    if (auto num = dynamic_cast<Number*>(s.get())) {
+Value syntaxToQuotedValue(const Syntax& syntax) {
+    if (auto num = dynamic_cast<Number*>(syntax.get())) {
         return IntegerV(num->n);
     }
-    else if (auto rational = dynamic_cast<RationalSyntax*>(s.get())) {
+    else if (auto rational = dynamic_cast<RationalSyntax*>(syntax.get())) {
         return RationalV(rational->numerator, rational->denominator);
     }
-    else if (auto sym = dynamic_cast<SymbolSyntax*>(s.get())) {
+    else if (auto sym = dynamic_cast<SymbolSyntax*>(syntax.get())) {
         return SymbolV(sym->s);
     }
-    else if (auto str = dynamic_cast<StringSyntax*>(s.get())) {
+    else if (auto str = dynamic_cast<StringSyntax*>(syntax.get())) {
         return StringV(str->s);
     }
-    else if (dynamic_cast<TrueSyntax*>(s.get())) {
+    else if (dynamic_cast<TrueSyntax*>(syntax.get())) {
         return BooleanV(true);
     }
-    else if (dynamic_cast<FalseSyntax*>(s.get())) {
+    else if (dynamic_cast<FalseSyntax*>(syntax.get())) {
         return BooleanV(false);
     }
-    else if (auto list = dynamic_cast<List*>(s.get())) {
+    else if (auto list = dynamic_cast<List*>(syntax.get())) {
         if (list->stxs.empty()) {
-            return NullV();
+        return NullV();
+    }
+    if (list->stxs.size() == 3) {
+        auto dot = dynamic_cast<SymbolSyntax*>(list->stxs[1].get());
+        if (dot && dot->s == ".") {
+            Value car = syntaxToQuotedValue(list->stxs[0]);
+            Value cdr = syntaxToQuotedValue(list->stxs[2]);
+            return PairV(car, cdr);
         }
-        Value current = NullV();
-        for (int i = list->stxs.size() - 1; i >= 0; --i) {
-            Quote quote_expr(list->stxs[i]);
-            Value element = quote_expr.eval(e);
-            current = PairV(element, current);
+    }
+    for (size_t i = 0; i < list->stxs.size(); i++) {
+        auto dot = dynamic_cast<SymbolSyntax*>(list->stxs[i].get());
+        if (dot && dot->s == ".") {
+            if (i == 0 || i == list->stxs.size() - 1) {
+                throw RuntimeError("Invalid dotted pair syntax");
+            }
+            Value car_part = NullV();
+            for (int j = i - 1; j >= 0; j--) {
+                Value elem = syntaxToQuotedValue(list->stxs[j]);
+                car_part = PairV(elem, car_part);
+            }
+            Value cdr_part = syntaxToQuotedValue(list->stxs[i + 1]);
+            Value current = car_part;
+            while (auto pair = dynamic_cast<Pair*>(current.get())) {
+                if (dynamic_cast<Null*>(pair->cdr.get())) {
+                    const_cast<Pair*>(pair)->cdr = cdr_part;
+                    return car_part;
+                }
+                current = pair->cdr;
+            }
+            
+            return car_part;
         }
-        return current;
-    }//这么quote依然存在问题，所以选择直接修改pair的显示方法
+    }
+    Value result = NullV();
+    for (int i = list->stxs.size() - 1; i >= 0; i--) {
+        Value element = syntaxToQuotedValue(list->stxs[i]);
+        result = PairV(element, result);
+    }
+    return result;
+    }
+    
     throw RuntimeError("Unsupported syntax in quote");
+}
+Value Quote::eval(Assoc& e){
+    return syntaxToQuotedValue(s);
 }
 
 Value AndVar::eval(Assoc &e) {

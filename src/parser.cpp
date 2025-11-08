@@ -300,7 +300,7 @@ Expr List::parse(Assoc &env) {
                 body = bodyExprs[0];
             } else {
                 body = Expr(new Begin(bodyExprs));
-            }//这里可能有多个表达式
+            }
             return Expr(new Lambda(params, body));
         }
         if(op=="define"){
@@ -357,13 +357,77 @@ Expr List::parse(Assoc &env) {
             }
             Expr value =stxs[2]->parse(env);
             return Expr(new Set(varSym->s, value));
+        }     
+        if (op == "let") {
+            if (stxs.size() < 2) {
+                throw RuntimeError("let: requires bindings and body");
+            }
+            auto bindings_list = dynamic_cast<List*>(stxs[1].get());
+            if (bindings_list==nullptr) {
+                throw RuntimeError("let: bindings must be a list");
+            }
+            std::vector<std::pair<std::string, Expr>> bindings;
+            for (auto& binding_syntax : bindings_list->stxs) {
+                auto binding = dynamic_cast<List*>(binding_syntax.get());
+                if (binding==nullptr || binding->stxs.size() != 2) {
+                    throw RuntimeError("let: each binding must be (variable value)");
+                }
+                auto var_sym = dynamic_cast<SymbolSyntax*>(binding->stxs[0].get());
+                if (var_sym==nullptr) {
+                    throw RuntimeError("let: variable must be a symbol");
+                }
+                Expr value_expr = binding->stxs[1]->parse(env);
+                bindings.push_back({var_sym->s, value_expr});
+            }
+            std::vector<Expr> body_exprs;
+            for (size_t i = 2; i < stxs.size(); i++) {
+                body_exprs.push_back(stxs[i]->parse(env));
+            }
+            Expr body(nullptr);
+            if (body_exprs.size() == 1) {
+                body = body_exprs[0];
+            } else {
+                body = Expr(new Begin(body_exprs));
+            }
+            return Expr(new Let(bindings, body));
         }
-        if(op=="let"){
-            throw RuntimeError("Undone yet");
+        if (op == "letrec") {
+            if (stxs.size() < 2) {
+                throw RuntimeError("letrec: requires bindings and body");
+            }
+            auto bindings_list = dynamic_cast<List*>(stxs[1].get());
+            if (bindings_list==nullptr) {
+                throw RuntimeError("letrec: bindings must be a list");
+            }
+    
+            std::vector<std::pair<std::string, Expr>> bindings;
+            for (auto& binding_syntax : bindings_list->stxs) {
+                auto binding = dynamic_cast<List*>(binding_syntax.get());
+                if (binding==nullptr || binding->stxs.size() != 2) {
+                    throw RuntimeError("letrec: each binding must be (variable value)");
+                }
+        
+                auto var_sym = dynamic_cast<SymbolSyntax*>(binding->stxs[0].get());
+                if (var_sym==nullptr) {
+                    throw RuntimeError("letrec: variable must be a symbol");
+                }
+        
+                Expr value_expr = binding->stxs[1]->parse(env);
+                bindings.push_back({var_sym->s, value_expr});
+            }
+            std::vector<Expr> body_exprs;
+            for (size_t i = 2; i < stxs.size(); i++) {
+                body_exprs.push_back(stxs[i]->parse(env));
+            }
+            Expr body(nullptr);
+            if (body_exprs.size() == 1) {
+                body = body_exprs[0];
+            } else {
+                body = Expr(new Begin(body_exprs));
+            }
+            return Expr(new Letrec(bindings, body));
         }
-        if(op=="letrec"){throw RuntimeError("Undone yet");}
-        throw RuntimeError("Unknown reserved word: " + op);
-    }//还有几个没有完成，待修改
+    }
         vector<Expr> parameters;
         for(int i=1;i<stxs.size();++i){
             parameters.push_back(stxs[i]->parse(env));

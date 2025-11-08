@@ -10,7 +10,7 @@ class RuntimeError :public std::exception {
     public:
         RuntimeError(std::string);
         std::string message() const;
-        //const char* what() const noexcept override;
+        const char* what() const noexcept override;
 };
 
 #endif
