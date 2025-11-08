@@ -54,15 +54,17 @@ void REPL(){
         try{
             Expr expr = stx -> parse(global_env);
             Value val = expr -> eval(global_env);
-
-            if(expr->e_type=E_VOID){
+            
+            if (val -> v_type == V_TERMINATE)
+                break;
+            
+            if(expr->e_type==E_VOID){
                 val -> show(std :: cout);
             }else if(expr->e_type!=E_VOID&&val->v_type!=V_VOID){
                 val -> show(std :: cout);
             }
             
-            if (val -> v_type == V_TERMINATE)
-                break;
+            
         }
         catch (const RuntimeError &RE){
             std::cout << "RuntimeError: " << RE.message();
