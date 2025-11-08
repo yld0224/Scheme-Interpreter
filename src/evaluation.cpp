@@ -628,25 +628,37 @@ int compareNumericValues(const Value &v1, const Value &v2) {
     else if (v1->v_type == V_RATIONAL && v2->v_type == V_INT) {
         Rational* r1 = dynamic_cast<Rational*>(v1.get());
         int n2 = dynamic_cast<Integer*>(v2.get())->n;
-        int left = r1->numerator;
-        int right = n2 * r1->denominator;
+        // 检查分母是否为0
+        if (r1->denominator == 0) {
+            throw RuntimeError("Division by zero");
+        }
+        long long left = (long long)r1->numerator;
+        long long right = (long long)n2 * r1->denominator;
         return (left < right) ? -1 : (left > right) ? 1 : 0;
     }
     else if (v1->v_type == V_INT && v2->v_type == V_RATIONAL) {
         int n1 = dynamic_cast<Integer*>(v1.get())->n;
         Rational* r2 = dynamic_cast<Rational*>(v2.get());
-        int left = n1 * r2->denominator;
-        int right = r2->numerator;
+        // 检查分母是否为0
+        if (r2->denominator == 0) {
+            throw RuntimeError("Division by zero");
+        }
+        long long left = (long long)n1 * r2->denominator;
+        long long right = (long long)r2->numerator;
         return (left < right) ? -1 : (left > right) ? 1 : 0;
     }
     else if (v1->v_type == V_RATIONAL && v2->v_type == V_RATIONAL) {
         Rational* r1 = dynamic_cast<Rational*>(v1.get());
         Rational* r2 = dynamic_cast<Rational*>(v2.get());
-        int left = r1->numerator * r2->denominator;
-        int right = r2->numerator * r1->denominator;
+        // 检查分母是否为0
+        if (r1->denominator == 0 || r2->denominator == 0) {
+            throw RuntimeError("Division by zero");
+        }
+        long long left = (long long)r1->numerator * r2->denominator;
+        long long right = (long long)r2->numerator * r1->denominator;
         return (left < right) ? -1 : (left > right) ? 1 : 0;
     }
-    throw RuntimeError("Wrong typename in numeric comparison");
+    throw RuntimeError("Wrong type for numeric comparison");
 }
 
 Value Less::evalRator(const Value &rand1, const Value &rand2) { // <
@@ -1161,14 +1173,18 @@ Value Define::eval(Assoc &env) {
     if (reserved_words.count(var)) {
         throw RuntimeError("Cannot use reserved word as variable: " + var);
     }
-    if(find(var,env).get()!=nullptr){
-        Value value=e->eval(env);
-        modify(var,value,env);
-    }
-    else{
-        env=extend(var, VoidV(), env);
-        Value value=e->eval(env);
-        modify(var,value,env);
+    
+    // 使用更安全的环境查找
+    Value existing = find(var, env);
+    if (existing.get() != nullptr) {
+        // 重新定义
+        Value value = e->eval(env);
+        modify(var, value, env);
+    } else {
+        // 新定义
+        env = extend(var, VoidV(), env);
+        Value value = e->eval(env);
+        modify(var, value, env);
     }
     return VoidV();
 }
