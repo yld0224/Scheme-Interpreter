@@ -55,6 +55,7 @@ void REPL(){
             std::cout << "DEBUG: Syntax parsed" << std::endl;
             Expr expr = stx -> parse(global_env);
             std::cout << "DEBUG: Expression parsed" << std::endl;
+            std::cout << "DEBUG: Expression type: " << expr->e_type << std::endl;
             Value val = expr -> eval(global_env);
             std::cout << "DEBUG: Evaluation completed" << std::endl;
             

@@ -19,6 +19,7 @@
 
 extern std::map<std::string, ExprType> primitives;
 extern std::map<std::string, ExprType> reserved_words;
+Value createPrimitiveProcedure(ExprType type);
 
 Value Fixnum::eval(Assoc &e) { // evaluation of a fixnum
     return IntegerV(n);
@@ -75,58 +76,28 @@ int isNumber(const std::string& str) {
     }
     return -1;
 }//用来判断x是不是一个数字
- Value Var::eval(Assoc &e) { 
-
+Value Var::eval(Assoc &e) { 
+    std::cout << "DEBUG: Var::eval - looking up: " << x << std::endl;
+    
     int num_result = isNumber(x);
     if (num_result != -1) {
+        std::cout << "DEBUG: Var::eval - " << x << " is a number: " << num_result << std::endl;
         return IntegerV(num_result);
     }
     
-    if (x.empty()) {
-        throw RuntimeError("Empty variable name");
-    }
-
-    char first_char = x[0];
-    if (isdigit(first_char) || first_char == '.' || first_char == '@') {
-        throw RuntimeError("Invalid variable name: " + x);
-    }
-
-    for (auto i : x) {
-        if (i == '#' || i == '\'' || i == '"' || i == '`') {
-            throw RuntimeError("Invalid variable name: " + x);
-        }
-    }
-    std::cout << "DEBUG: Looking up variable: " << x << std::endl;
     Value matched_value = find(x, e);
     if (matched_value.get() != nullptr) {
-        std::cout << "DEBUG: Found variable '" << x << "' = ";
+        std::cout << "DEBUG: Var::eval - found " << x << " in environment: ";
+        matched_value->show(std::cout);
+        std::cout << std::endl;
         return matched_value;
     }
+    
     if (primitives.count(x)) {
-        static std::map<ExprType, std::pair<Expr, std::vector<std::string>>> primitive_map = {
-            {E_VOID,     {new MakeVoid(), {}}},
-            {E_EXIT,     {new Exit(), {}}},
-            {E_BOOLQ,    {new IsBoolean(new Var("parm")), {"parm"}}},
-            {E_INTQ,     {new IsFixnum(new Var("parm")), {"parm"}}},
-            {E_NULLQ,    {new IsNull(new Var("parm")), {"parm"}}},
-            {E_PAIRQ,    {new IsPair(new Var("parm")), {"parm"}}},
-            {E_PROCQ,    {new IsProcedure(new Var("parm")), {"parm"}}},
-            {E_SYMBOLQ,  {new IsSymbol(new Var("parm")), {"parm"}}},
-            {E_STRINGQ,  {new IsString(new Var("parm")), {"parm"}}},
-            {E_DISPLAY,  {new Display(new Var("parm")), {"parm"}}},
-            {E_PLUS,     {new PlusVar({}),  {}}},
-            {E_MINUS,    {new MinusVar({}), {}}},
-            {E_MUL,      {new MultVar({}),  {}}},
-            {E_DIV,      {new DivVar({}),   {}}},
-            {E_MODULO,   {new Modulo(new Var("parm1"), new Var("parm2")), {"parm1","parm2"}}},
-            {E_EXPT,     {new Expt(new Var("parm1"), new Var("parm2")), {"parm1","parm2"}}},
-            {E_EQQ,      {new EqualVar({}), {}}},
-        };
-        auto it = primitive_map.find(primitives[x]);
-        if (it != primitive_map.end()) {
-            return it->second.first->eval(e);
-        }
+        std::cout << "DEBUG: Var::eval - " << x << " is a primitive procedure" << std::endl;
+        return createPrimitiveProcedure(primitives[x]);
     }
+    
     throw RuntimeError("Undefined variable: " + x);
 }
 static int gcd(int a, int b) {
@@ -810,19 +781,15 @@ Value Cons::evalRator(const Value &rand1, const Value &rand2) { // cons
     return PairV(rand1,rand2);
 }
 
-Value ListFunc::evalRator(const std::vector<Value> &args) { // list function
-    if(args.size()==0){return NullV();}
-    else if(args.size()==1){return PairV(args[0],NullV());}
-    else{
-        Value v=PairV(args[0],NullV());
-        auto ptr=dynamic_cast<Pair*>(v.get());
-        for(auto iter=args.begin()+1;iter!=args.end();++iter){
-            ptr->cdr=PairV(NullV(),NullV());
-            ptr=dynamic_cast<Pair*>(ptr->cdr.get());
-            ptr->car=*iter;
-        }
-        return v;
+Value ListFunc::evalRator(const std::vector<Value> &args) {
+    if (args.empty()) {
+        return NullV();
     }
+    Value result = NullV();
+    for (int i = args.size() - 1; i >= 0; --i) {
+        result = PairV(args[i], result);
+    }
+    return result;
 }
 
 Value IsList::evalRator(const Value &rand) { // list?
@@ -909,7 +876,8 @@ Value IsPair::evalRator(const Value &rand) { // pair?
     return BooleanV(rand->v_type == V_PAIR);
 }
 
-Value IsProcedure::evalRator(const Value &rand) { // procedure?
+Value IsProcedure::evalRator(const Value &rand) {
+// procedure?
     return BooleanV(rand->v_type == V_PROC);
 }
 
@@ -1086,23 +1054,124 @@ Value Lambda::eval(Assoc &env) {
 }//只负责捕获，不修改当前环境
 
 Value Apply::eval(Assoc &env) {
+    std::cout << "DEBUG: Apply::eval - starting" << std::endl;
     Value proc_value = rator->eval(env);
-    Procedure* proc = dynamic_cast<Procedure*>(proc_value.get());
-    if (proc==nullptr) {
-        throw RuntimeError("Invalid procedure object");
-    }
+    std::cout << "DEBUG: Apply::eval - procedure: ";
+    proc_value->show(std::cout);
+    std::cout << std::endl;
+    
     std::vector<Value> args;
     for (auto &arg_expr : rand) {
-        args.push_back(arg_expr->eval(env));
+        Value arg_value = arg_expr->eval(env);
+        std::cout << "DEBUG: Apply::eval - argument: ";
+        arg_value->show(std::cout);
+        std::cout << std::endl;
+        args.push_back(arg_value);
     }
-    if (args.size() != proc->parameters.size()) {
-        throw RuntimeError("Wrong number of arguments");
+    Procedure* proc = dynamic_cast<Procedure*>(proc_value.get());
+    if (proc == nullptr) {
+        throw RuntimeError("Invalid procedure object: expected procedure, got " + std::to_string(proc_value->v_type));
     }
-    Assoc new_env = proc->env;  
-    for (size_t i = 0; i < args.size(); ++i) {
-        new_env = extend(proc->parameters[i], args[i], new_env);
+    if (proc->env.get() == nullptr) {
+        std::cout << "DEBUG: Apply::eval - processing primitive procedure" << std::endl;
+    
+    ExprBase* expr_base = proc->e.get();
+    std::cout << "DEBUG: Apply::eval - expression type: " << expr_base->e_type << std::endl;
+         
+        if (dynamic_cast<PlusVar*>(expr_base)) {
+        std::cout << "DEBUG: Apply::eval - detected PlusVar" << std::endl;
+        Variadic* variadic = dynamic_cast<Variadic*>(expr_base);
+        if (variadic) {
+            return variadic->evalRator(args);
+        }
     }
-    return proc->e->eval(new_env);
+    else if (dynamic_cast<MinusVar*>(expr_base)) {
+        std::cout << "DEBUG: Apply::eval - detected MinusVar" << std::endl;
+        Variadic* variadic = dynamic_cast<Variadic*>(expr_base);
+        if (variadic) {
+            return variadic->evalRator(args);
+        }
+    }
+
+        if (dynamic_cast<PlusVar*>(expr_base) ||
+            dynamic_cast<MinusVar*>(expr_base) ||
+            dynamic_cast<MultVar*>(expr_base) ||
+            dynamic_cast<DivVar*>(expr_base) ||
+            dynamic_cast<LessVar*>(expr_base) ||
+            dynamic_cast<LessEqVar*>(expr_base) ||
+            dynamic_cast<EqualVar*>(expr_base) ||
+            dynamic_cast<GreaterEqVar*>(expr_base) ||
+            dynamic_cast<GreaterVar*>(expr_base) ||
+            dynamic_cast<ListFunc*>(expr_base)) {
+            Variadic* variadic = dynamic_cast<Variadic*>(expr_base);
+            if (variadic) {
+                return variadic->evalRator(args);
+            }
+        }
+        else if (dynamic_cast<Not*>(expr_base) ||
+                 dynamic_cast<Car*>(expr_base) ||
+                 dynamic_cast<Cdr*>(expr_base) ||
+                 dynamic_cast<IsBoolean*>(expr_base) ||
+                 dynamic_cast<IsFixnum*>(expr_base) ||
+                 dynamic_cast<IsNull*>(expr_base) ||
+                 dynamic_cast<IsPair*>(expr_base) ||
+                 dynamic_cast<IsProcedure*>(expr_base) ||
+                 dynamic_cast<IsSymbol*>(expr_base) ||
+                 dynamic_cast<IsList*>(expr_base) ||
+                 dynamic_cast<IsString*>(expr_base) ||
+                 dynamic_cast<Display*>(expr_base)) {
+            if (args.size() == 1) {
+                Unary* unary = dynamic_cast<Unary*>(expr_base);
+                if (unary) {
+                    return unary->evalRator(args[0]);
+                }
+            } else {
+                throw RuntimeError("Wrong number of arguments for unary operation");
+            }
+        }
+        else if (dynamic_cast<Plus*>(expr_base) ||
+                 dynamic_cast<Minus*>(expr_base) ||
+                 dynamic_cast<Mult*>(expr_base) ||
+                 dynamic_cast<Div*>(expr_base) ||
+                 dynamic_cast<Modulo*>(expr_base) ||
+                 dynamic_cast<Expt*>(expr_base) ||
+                 dynamic_cast<Less*>(expr_base) ||
+                 dynamic_cast<LessEq*>(expr_base) ||
+                 dynamic_cast<Equal*>(expr_base) ||
+                 dynamic_cast<GreaterEq*>(expr_base) ||
+                 dynamic_cast<Greater*>(expr_base) ||
+                 dynamic_cast<Cons*>(expr_base) ||
+                 dynamic_cast<SetCar*>(expr_base) ||
+                 dynamic_cast<SetCdr*>(expr_base) ||
+                 dynamic_cast<IsEq*>(expr_base)) {
+            if (args.size() == 2) {
+                Binary* binary = dynamic_cast<Binary*>(expr_base);
+                if (binary) {
+                    return binary->evalRator(args[0], args[1]);
+                }
+            } else {
+                throw RuntimeError("Wrong number of arguments for binary operation");
+            }
+        }
+        else {
+            Assoc temp_env = empty();
+            for (size_t i = 0; i < args.size() && i < proc->parameters.size(); ++i) {
+                temp_env = extend(proc->parameters[i], args[i], temp_env);
+            }
+            return proc->e->eval(temp_env);
+        }
+    } else {
+        if (args.size() != proc->parameters.size()) {
+            throw RuntimeError("Wrong number of arguments");
+        }
+        
+        Assoc new_env = proc->env;  
+        for (size_t i = 0; i < args.size(); ++i) {
+            new_env = extend(proc->parameters[i], args[i], new_env);
+        }
+        return proc->e->eval(new_env);
+    }
+    throw RuntimeError("Unhandled procedure application");
 }//这部分负责将lambda捕获的闭包求值
 
 //接下来的部分和环境有关
@@ -1113,26 +1182,46 @@ Value Define::eval(Assoc &env) {
     if (reserved_words.count(var)) {
         throw RuntimeError("Cannot use reserved word as variable: " + var);
     }
-    Value value = e->eval(env);
-    env=extend(var, value, env);//忘记把env赋值给extend了..
-    Value test = find(var, env);
-    if (test.get() == nullptr) {
-        std::cout << "ERROR: Variable '" << var << "' not found after define!" << std::endl;
-    } else {
-        std::cout << "SUCCESS: Variable '" << var << "' defined as: ";
-        test->show(std::cout);
-        std::cout << std::endl;
+    if(find(var,env).get()!=nullptr){
+        Value value=e->eval(env);
+        modify(var,value,env);
+    }
+    else{
+        env=extend(var, VoidV(), env);
+        Value value=e->eval(env);
+        modify(var,value,env);
     }
     return VoidV();
 }
 
 Value Let::eval(Assoc &env) {
-    Assoc new_env = env;
-    for (auto& binding : bind) {
+    std::cout << "DEBUG: Let::eval - Starting with " << bind.size() << " bindings" << std::endl;
+    
+    std::vector<Value> tmp;
+    for(auto& binding : bind){
+        std::cout << "DEBUG: Evaluating binding for " << binding.first << std::endl;
         Value value = binding.second->eval(env);
-        new_env = extend(binding.first, value, new_env);
+        std::cout << "DEBUG: Binding " << binding.first << " to value: ";
+        value->show(std::cout);
+        std::cout << std::endl;
+        tmp.push_back(value);
     }
-    return body->eval(new_env);
+    
+    Assoc new_env = env;
+    for (int i=0;i<tmp.size();++i) {
+        std::cout << "DEBUG: Extending environment with " << bind[i].first << " = ";
+        tmp[i]->show(std::cout);
+        std::cout << std::endl;
+        new_env = extend(bind[i].first, tmp[i], new_env);
+    }
+    
+    std::cout << "DEBUG: Evaluating let body" << std::endl;
+    Value result = body->eval(new_env);
+    
+    std::cout << "DEBUG: Let::eval - Result: ";
+    result->show(std::cout);
+    std::cout << std::endl;
+    return result;
 }
 
 Value Letrec::eval(Assoc &env) {
@@ -1170,4 +1259,72 @@ Value Display::evalRator(const Value &rand) { // display function
         rand->show(std::cout);
     }
     return VoidV();
+}
+//---------------将原始过程转换-------------------//
+//----------------------------------------------//
+Value createPrimitiveProcedure(ExprType type) {
+    switch(type) {
+        case E_PLUS:
+        std::cout << "DEBUG: Creating PlusVar primitive" << std::endl;
+            return ProcedureV({}, Expr(new PlusVar({})), empty());
+        case E_MINUS:
+         std::cout << "DEBUG: Creating MinusVar primitive" << std::endl;
+            return ProcedureV({}, Expr(new MinusVar({})), empty());
+        case E_MUL:
+            return ProcedureV({}, Expr(new MultVar({})), empty());
+        case E_DIV:
+            return ProcedureV({}, Expr(new DivVar({})), empty());
+        case E_LT:
+            return ProcedureV({}, Expr(new LessVar({})), empty());
+        case E_LE:
+            return ProcedureV({}, Expr(new LessEqVar({})), empty());
+        case E_EQ:
+            return ProcedureV({}, Expr(new EqualVar({})), empty());
+        case E_GE:
+            return ProcedureV({}, Expr(new GreaterEqVar({})), empty());
+        case E_GT:
+            return ProcedureV({}, Expr(new GreaterVar({})), empty());
+        case E_LIST:
+            return ProcedureV({}, Expr(new ListFunc({})), empty());
+        case E_CONS:
+            return ProcedureV({"a", "b"}, Expr(new Cons(Expr(new Var("a")), Expr(new Var("b")))), empty());
+        case E_CAR:
+            return ProcedureV({"p"}, Expr(new Car(Expr(new Var("p")))), empty());
+        case E_CDR:
+            return ProcedureV({"p"}, Expr(new Cdr(Expr(new Var("p")))), empty());
+        case E_SETCAR:
+            return ProcedureV({"p", "v"}, Expr(new SetCar(Expr(new Var("p")), Expr(new Var("v")))), empty());
+        case E_SETCDR:
+            return ProcedureV({"p", "v"}, Expr(new SetCdr(Expr(new Var("p")), Expr(new Var("v")))), empty());
+        case E_EQQ:
+            return ProcedureV({"a", "b"}, Expr(new IsEq(Expr(new Var("a")), Expr(new Var("b")))), empty());
+        case E_BOOLQ:
+            return ProcedureV({"v"}, Expr(new IsBoolean(Expr(new Var("v")))), empty());
+        case E_INTQ:
+            return ProcedureV({"v"}, Expr(new IsFixnum(Expr(new Var("v")))), empty());
+        case E_NULLQ:
+            return ProcedureV({"v"}, Expr(new IsNull(Expr(new Var("v")))), empty());
+        case E_PAIRQ:
+            return ProcedureV({"v"}, Expr(new IsPair(Expr(new Var("v")))), empty());
+        case E_PROCQ:
+            return ProcedureV({"v"}, Expr(new IsProcedure(Expr(new Var("v")))), empty());
+        case E_SYMBOLQ:
+            return ProcedureV({"v"}, Expr(new IsSymbol(Expr(new Var("v")))), empty());
+        case E_LISTQ:
+            return ProcedureV({"v"}, Expr(new IsList(Expr(new Var("v")))), empty());
+        case E_STRINGQ:
+            return ProcedureV({"v"}, Expr(new IsString(Expr(new Var("v")))), empty());
+        case E_DISPLAY:
+            return ProcedureV({"v"}, Expr(new Display(Expr(new Var("v")))), empty());
+        case E_VOID:
+            return ProcedureV({}, Expr(new MakeVoid()), empty());
+        case E_EXIT:
+            return ProcedureV({}, Expr(new Exit()), empty());
+        case E_MODULO:
+            return ProcedureV({"a", "b"}, Expr(new Modulo(Expr(new Var("a")), Expr(new Var("b")))), empty());
+        case E_EXPT:
+            return ProcedureV({"a", "b"}, Expr(new Expt(Expr(new Var("a")), Expr(new Var("b")))), empty());
+        default:
+            throw RuntimeError("Unknown primitive procedure type");
+    }
 }

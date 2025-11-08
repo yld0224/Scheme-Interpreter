@@ -59,6 +59,9 @@ Expr List::parse(Assoc &env) {
         return Expr(new ListFunc(vector<Expr>()));
     }
     SymbolSyntax *id = dynamic_cast<SymbolSyntax*>(stxs[0].get());
+    if (id != nullptr) {
+        std::cout << "DEBUG: List::parse - first element is symbol: " << id->s << std::endl;
+    }
     if (id == nullptr) {
         vector<Expr> parameters;
         for(int i=1;i<stxs.size();++i){
@@ -86,7 +89,7 @@ Expr List::parse(Assoc &env) {
         }
         ExprType op_type = primitives[op];
         if (op_type == E_PLUS) {
-            if(parameters.empty()){return Expr(new Fixnum(0));}
+            if(parameters.empty()){return Expr(new PlusVar({}));}
             else if(parameters.size()==1){return Expr(new Plus(parameters[0],new Fixnum(0)));}
             else if (parameters.size() == 2) {
                 return Expr(new Plus(parameters[0], parameters[1])); 
@@ -102,7 +105,7 @@ Expr List::parse(Assoc &env) {
                 return Expr(new MinusVar(parameters));
             }
         } else if (op_type == E_MUL) {
-           if(parameters.empty()){return Expr(new Fixnum(1));}
+           if(parameters.empty()){return Expr(new MultVar({}));}
             else if(parameters.size()==1){return Expr(new Mult(new Fixnum(1),parameters[0]));}
             else if (parameters.size() == 2) {
                 return Expr(new Mult(parameters[0], parameters[1])); 
