@@ -64,109 +64,71 @@ Value Variadic::eval(Assoc &e) {
     return evalRator(tmp);
 }//实现了一些eval求值
 
-double isNumber(const std::string& str){
+int isNumber(const std::string& str) {
+    if (str.empty()) return -1;
     std::istringstream iss(str);
-    double num;
-    if(iss>>num){
-        return num;
+    int num;
+    if (iss >> num) {
+        if (iss.eof()) {
+            return num;
+        }
     }
     return -1;
 }//用来判断x是不是一个数字
-Value Var::eval(Assoc &e) { 
-    if(isNumber(x)!=-1){return IntegerV(isNumber(x));}
-    if(x[0]=='.'||x[0]=='@'||x[0]=='0'||x[0]=='1'
-        ||x[0]=='2'||x[0]=='3'||x[0]=='4'||
-        x[0]=='5'||x[0]=='6'||x[0]=='7'|x[0]=='8'||x[0]=='9'){throw RuntimeError("Invalid variable name");}
-    for(auto i:x){
-        if(i=='#'||i=='\''||i=='"'||i=='`'){
-            throw RuntimeError("Invalid variable name");
-        }
+ Value Var::eval(Assoc &e) { 
+
+    int num_result = isNumber(x);
+    if (num_result != -1) {
+        return IntegerV(num_result);
     }
     
-    Value matched_value = find(x, e);
-    if (matched_value.get() == nullptr) {
-        if (primitives.count(x)) {
-             static std::map<ExprType, std::pair<Expr, std::vector<std::string>>> primitive_map = {
-                    {E_VOID,     {new MakeVoid(), {}}},
-                    {E_EXIT,     {new Exit(), {}}},
-                    {E_BOOLQ,    {new IsBoolean(new Var("parm")), {"parm"}}},
-                    {E_INTQ,     {new IsFixnum(new Var("parm")), {"parm"}}},
-                    {E_NULLQ,    {new IsNull(new Var("parm")), {"parm"}}},
-                    {E_PAIRQ,    {new IsPair(new Var("parm")), {"parm"}}},
-                    {E_PROCQ,    {new IsProcedure(new Var("parm")), {"parm"}}},
-                    {E_SYMBOLQ,  {new IsSymbol(new Var("parm")), {"parm"}}},
-                    {E_STRINGQ,  {new IsString(new Var("parm")), {"parm"}}},
-                    {E_DISPLAY,  {new Display(new Var("parm")), {"parm"}}},
-                    {E_PLUS,     {new PlusVar({}),  {}}},
-                    {E_MINUS,    {new MinusVar({}), {}}},
-                    {E_MUL,      {new MultVar({}),  {}}},
-                    {E_DIV,      {new DivVar({}),   {}}},
-                    {E_MODULO,   {new Modulo(new Var("parm1"), new Var("parm2")), {"parm1","parm2"}}},
-                    {E_EXPT,     {new Expt(new Var("parm1"), new Var("parm2")), {"parm1","parm2"}}},
-                    {E_EQQ,      {new EqualVar({}), {}}},
-            };
-
-            auto it = primitive_map.find(primitives[x]);
-            if (it != primitive_map.end()) {
-                if(it->first==E_VOID){
-                    auto ptr=dynamic_cast<MakeVoid*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_EXIT){
-                    auto ptr=dynamic_cast<Exit*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_BOOLQ){
-                    auto ptr=dynamic_cast<IsBoolean*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_INTQ){
-                    auto ptr=dynamic_cast<IsFixnum*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_NULLQ){
-                    auto ptr=dynamic_cast<IsNull*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_PAIRQ){
-                    auto ptr=dynamic_cast<IsPair*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_SYMBOLQ){
-                    auto ptr=dynamic_cast<IsSymbol*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_STRINGQ){
-                    auto ptr=dynamic_cast<IsString*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_PROCQ){
-                    auto ptr=dynamic_cast<IsProcedure*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_DISPLAY){
-                    auto ptr=dynamic_cast<Display*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_PLUS){
-                    auto ptr=dynamic_cast<PlusVar*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_DIV){
-                    auto ptr=dynamic_cast<DivVar*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_MODULO){
-                    auto ptr=dynamic_cast<Modulo*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_MINUS){
-                    auto ptr=dynamic_cast<MinusVar*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_MUL){
-                    auto ptr=dynamic_cast<MultVar*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_EXPT){
-                    auto ptr=dynamic_cast<Expt*>(it->second.first.get());
-                    return ptr->eval(e);
-                }if(it->first==E_EQQ){
-                    auto ptr=dynamic_cast<EqualVar*>(it->second.first.get());
-                    return ptr->eval(e);
-                }
-            }
-        }
-        throw RuntimeError("Undefined Variable");
+    if (x.empty()) {
+        throw RuntimeError("Empty variable name");
     }
-    return matched_value;
-}
 
+    char first_char = x[0];
+    if (isdigit(first_char) || first_char == '.' || first_char == '@') {
+        throw RuntimeError("Invalid variable name: " + x);
+    }
+
+    for (auto i : x) {
+        if (i == '#' || i == '\'' || i == '"' || i == '`') {
+            throw RuntimeError("Invalid variable name: " + x);
+        }
+    }
+    std::cout << "DEBUG: Looking up variable: " << x << std::endl;
+    Value matched_value = find(x, e);
+    if (matched_value.get() != nullptr) {
+        std::cout << "DEBUG: Found variable '" << x << "' = ";
+        return matched_value;
+    }
+    if (primitives.count(x)) {
+        static std::map<ExprType, std::pair<Expr, std::vector<std::string>>> primitive_map = {
+            {E_VOID,     {new MakeVoid(), {}}},
+            {E_EXIT,     {new Exit(), {}}},
+            {E_BOOLQ,    {new IsBoolean(new Var("parm")), {"parm"}}},
+            {E_INTQ,     {new IsFixnum(new Var("parm")), {"parm"}}},
+            {E_NULLQ,    {new IsNull(new Var("parm")), {"parm"}}},
+            {E_PAIRQ,    {new IsPair(new Var("parm")), {"parm"}}},
+            {E_PROCQ,    {new IsProcedure(new Var("parm")), {"parm"}}},
+            {E_SYMBOLQ,  {new IsSymbol(new Var("parm")), {"parm"}}},
+            {E_STRINGQ,  {new IsString(new Var("parm")), {"parm"}}},
+            {E_DISPLAY,  {new Display(new Var("parm")), {"parm"}}},
+            {E_PLUS,     {new PlusVar({}),  {}}},
+            {E_MINUS,    {new MinusVar({}), {}}},
+            {E_MUL,      {new MultVar({}),  {}}},
+            {E_DIV,      {new DivVar({}),   {}}},
+            {E_MODULO,   {new Modulo(new Var("parm1"), new Var("parm2")), {"parm1","parm2"}}},
+            {E_EXPT,     {new Expt(new Var("parm1"), new Var("parm2")), {"parm1","parm2"}}},
+            {E_EQQ,      {new EqualVar({}), {}}},
+        };
+        auto it = primitive_map.find(primitives[x]);
+        if (it != primitive_map.end()) {
+            return it->second.first->eval(e);
+        }
+    }
+    throw RuntimeError("Undefined variable: " + x);
+}
 static int gcd(int a, int b) {
     if (a < 0) a = -a;
     if (b < 0) b = -b;
@@ -223,6 +185,7 @@ Value Plus::evalRator(const Value &rand1, const Value &rand2) {
         a=a/g;b=b/g;
         return RationalV(a,b);
     }
+    return VoidV();
 }
 Value plus(const Value &rand1, const Value &rand2) {
     ValueType type1=rand1->v_type;
@@ -269,6 +232,7 @@ Value plus(const Value &rand1, const Value &rand2) {
         a=a/g;b=b/g;
         return RationalV(a,b);
     }
+    return VoidV();
 }
 
 Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
@@ -314,6 +278,7 @@ Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
         a=a/g;b=b/g;
         return RationalV(a,b);
     }
+    return VoidV();
 }
 Value minus(const Value &rand1, const Value &rand2) { // -
     ValueType type1=rand1->v_type;
@@ -358,6 +323,7 @@ Value minus(const Value &rand1, const Value &rand2) { // -
         a=a/g;b=b/g;
         return RationalV(a,b);
     }
+    return VoidV();
 }
 
 Value Mult::evalRator(const Value &rand1, const Value &rand2) { // *
@@ -405,6 +371,7 @@ Value Mult::evalRator(const Value &rand1, const Value &rand2) { // *
         if(b!=1){return RationalV(a,b);}
         else{return IntegerV(a);}
     }
+    return VoidV();
 }
 Value mult(const Value &rand1, const Value &rand2) { // *
    ValueType type1=rand1->v_type;
@@ -451,6 +418,7 @@ Value mult(const Value &rand1, const Value &rand2) { // *
         if(b!=1){return RationalV(a,b);}
         else{return IntegerV(a);}
     }
+    return VoidV();
 }
 Value Div::evalRator(const Value &rand1, const Value &rand2) { // /
     ValueType type1=rand1->v_type;
@@ -500,6 +468,7 @@ Value Div::evalRator(const Value &rand1, const Value &rand2) { // /
         a=a/g;b=b/g;
         {return RationalV(b,a);}
     }
+    return VoidV();
 }
 Value div(const Value &rand1, const Value &rand2) { // /
     ValueType type1=rand1->v_type;
@@ -549,6 +518,7 @@ Value div(const Value &rand1, const Value &rand2) { // /
         a=a/g;b=b/g;
         {return RationalV(b,a);}
     }
+    return VoidV();
 }
 Value Modulo::evalRator(const Value &rand1, const Value &rand2) { // modulo
     if (rand1->v_type == V_INT && rand2->v_type == V_INT) {
@@ -906,19 +876,15 @@ Value SetCdr::evalRator(const Value &rand1, const Value &rand2) { // set-cdr!
 }
 
 Value IsEq::evalRator(const Value &rand1, const Value &rand2) { // eq?
-    // 检查类型是否为 Integer
     if (rand1->v_type == V_INT && rand2->v_type == V_INT) {
         return BooleanV((dynamic_cast<Integer*>(rand1.get())->n) == (dynamic_cast<Integer*>(rand2.get())->n));
     }
-    // 检查类型是否为 Boolean
     else if (rand1->v_type == V_BOOL && rand2->v_type == V_BOOL) {
         return BooleanV((dynamic_cast<Boolean*>(rand1.get())->b) == (dynamic_cast<Boolean*>(rand2.get())->b));
     }
-    // 检查类型是否为 Symbol
     else if (rand1->v_type == V_SYM && rand2->v_type == V_SYM) {
         return BooleanV((dynamic_cast<Symbol*>(rand1.get())->s) == (dynamic_cast<Symbol*>(rand2.get())->s));
     }
-    // 检查类型是否为 Null 或 Void
     else if ((rand1->v_type == V_NULL && rand2->v_type == V_NULL) ||
              (rand1->v_type == V_VOID && rand2->v_type == V_VOID)) {
         return BooleanV(true);
@@ -1016,7 +982,6 @@ Value syntaxToQuotedValue(const Syntax& syntax) {
                 }
                 current = pair->cdr;
             }
-            
             return car_part;
         }
     }
@@ -1027,7 +992,6 @@ Value syntaxToQuotedValue(const Syntax& syntax) {
     }
     return result;
     }
-    
     throw RuntimeError("Unsupported syntax in quote");
 }
 Value Quote::eval(Assoc& e){
@@ -1064,6 +1028,7 @@ Value Not::evalRator(const Value &rand) { // not
     if(ptr==nullptr){return BooleanV(false);}
     else if(ptr->b==false){return BooleanV(true);}
     else if(ptr->b==true){return BooleanV(false);}
+    return VoidV();
 }
 
 Value If::eval(Assoc &e) {
@@ -1074,6 +1039,7 @@ Value If::eval(Assoc &e) {
         if(ptr->b==true){return conseq->eval(e);}
         else if(ptr->b==false){return alter->eval(e);}
     }
+    return VoidV();
 }
 
 Value Cond::eval(Assoc &env) {
@@ -1121,9 +1087,6 @@ Value Lambda::eval(Assoc &env) {
 
 Value Apply::eval(Assoc &env) {
     Value proc_value = rator->eval(env);
-    if (proc_value->v_type != V_PROC) {
-        throw RuntimeError("Attempt to apply a non-procedure");
-    }
     Procedure* proc = dynamic_cast<Procedure*>(proc_value.get());
     if (proc==nullptr) {
         throw RuntimeError("Invalid procedure object");
@@ -1140,11 +1103,9 @@ Value Apply::eval(Assoc &env) {
         new_env = extend(proc->parameters[i], args[i], new_env);
     }
     return proc->e->eval(new_env);
-}
+}//这部分负责将lambda捕获的闭包求值
 
-
-
-
+//接下来的部分和环境有关
 Value Define::eval(Assoc &env) {
     if (primitives.count(var)) {
         throw RuntimeError("Cannot redefine primitive: " + var);
@@ -1153,7 +1114,15 @@ Value Define::eval(Assoc &env) {
         throw RuntimeError("Cannot use reserved word as variable: " + var);
     }
     Value value = e->eval(env);
-    extend(var, value, env);
+    env=extend(var, value, env);//忘记把env赋值给extend了..
+    Value test = find(var, env);
+    if (test.get() == nullptr) {
+        std::cout << "ERROR: Variable '" << var << "' not found after define!" << std::endl;
+    } else {
+        std::cout << "SUCCESS: Variable '" << var << "' defined as: ";
+        test->show(std::cout);
+        std::cout << std::endl;
+    }
     return VoidV();
 }
 
@@ -1200,6 +1169,5 @@ Value Display::evalRator(const Value &rand) { // display function
     } else {
         rand->show(std::cout);
     }
-    
     return VoidV();
 }

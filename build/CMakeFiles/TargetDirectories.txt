@@ -1,3 +1,0 @@
-/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build/CMakeFiles/code.dir
-/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build/CMakeFiles/edit_cache.dir
-/mnt/windows_share/Codefield/CODE_C/SchemeInterpreter-main/build/CMakeFiles/rebuild_cache.dir
