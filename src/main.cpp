@@ -58,6 +58,7 @@ void REPL(){
             {break;}
             if (val->v_type != V_VOID || expr->e_type == E_VOID) {
                 val->show(std :: cout);
+                std::cout<<std::endl;
             }
         }
         catch (const RuntimeError &RE){
@@ -69,7 +70,6 @@ void REPL(){
         catch (...) {
             std::cout << "Unknown exception";
         }
-        puts("");
     }
 }
 int main(int argc, char *argv[]) {
