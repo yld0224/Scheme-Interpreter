@@ -52,28 +52,26 @@ void REPL(){
         #endif
         Syntax stx = readSyntax(std :: cin);
         try{
-            std::cout << "DEBUG: Syntax parsed" << std::endl;
             Expr expr = stx -> parse(global_env);
-            std::cout << "DEBUG: Expression parsed" << std::endl;
-            std::cout << "DEBUG: Expression type: " << expr->e_type << std::endl;
             Value val = expr -> eval(global_env);
-            std::cout << "DEBUG: Evaluation completed" << std::endl;
+
+            if(expr->e_type=E_VOID){
+                val -> show(std :: cout);
+            }else if(expr->e_type!=E_VOID&&val->v_type!=V_VOID){
+                val -> show(std :: cout);
+            }
             
             if (val -> v_type == V_TERMINATE)
                 break;
-                
-            std::cout << "DEBUG: Showing value: ";
-            val -> show(std :: cout);
-            std::cout << std::endl;
         }
         catch (const RuntimeError &RE){
-            std::cout << "RuntimeError: " << RE.message() << std::endl;
+            std::cout << "RuntimeError: " << RE.message();
         }
         catch (const std::exception &e) {
-            std::cout << "Std exception: " << e.what() << std::endl;
+            std::cout << "Std exception: " << e.what() ;
         }
         catch (...) {
-            std::cout << "Unknown exception" << std::endl;
+            std::cout << "Unknown exception" ;
         }
         puts("");
     }

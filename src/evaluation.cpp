@@ -77,24 +77,18 @@ int isNumber(const std::string& str) {
     return -1;
 }//用来判断x是不是一个数字
 Value Var::eval(Assoc &e) { 
-    std::cout << "DEBUG: Var::eval - looking up: " << x << std::endl;
-    
     int num_result = isNumber(x);
     if (num_result != -1) {
-        std::cout << "DEBUG: Var::eval - " << x << " is a number: " << num_result << std::endl;
         return IntegerV(num_result);
     }
-    
     Value matched_value = find(x, e);
     if (matched_value.get() != nullptr) {
-        std::cout << "DEBUG: Var::eval - found " << x << " in environment: ";
-        matched_value->show(std::cout);
-        std::cout << std::endl;
+
+
         return matched_value;
     }
     
     if (primitives.count(x)) {
-        std::cout << "DEBUG: Var::eval - " << x << " is a primitive procedure" << std::endl;
         return createPrimitiveProcedure(primitives[x]);
     }
     
@@ -1054,45 +1048,30 @@ Value Lambda::eval(Assoc &env) {
 }//只负责捕获，不修改当前环境
 
 Value Apply::eval(Assoc &env) {
-    std::cout << "DEBUG: Apply::eval - starting" << std::endl;
+
     Value proc_value = rator->eval(env);
-    std::cout << "DEBUG: Apply::eval - procedure: ";
-    proc_value->show(std::cout);
-    std::cout << std::endl;
+
+
     
     std::vector<Value> args;
     for (auto &arg_expr : rand) {
         Value arg_value = arg_expr->eval(env);
-        std::cout << "DEBUG: Apply::eval - argument: ";
-        arg_value->show(std::cout);
-        std::cout << std::endl;
+
         args.push_back(arg_value);
     }
+
+
+  
+
+
+
+
     Procedure* proc = dynamic_cast<Procedure*>(proc_value.get());
     if (proc == nullptr) {
-        throw RuntimeError("Invalid procedure object: expected procedure, got " + std::to_string(proc_value->v_type));
+        throw RuntimeError("Invalid procedure object: expected procedure, got " );
     }
     if (proc->env.get() == nullptr) {
-        std::cout << "DEBUG: Apply::eval - processing primitive procedure" << std::endl;
-    
-    ExprBase* expr_base = proc->e.get();
-    std::cout << "DEBUG: Apply::eval - expression type: " << expr_base->e_type << std::endl;
-         
-        if (dynamic_cast<PlusVar*>(expr_base)) {
-        std::cout << "DEBUG: Apply::eval - detected PlusVar" << std::endl;
-        Variadic* variadic = dynamic_cast<Variadic*>(expr_base);
-        if (variadic) {
-            return variadic->evalRator(args);
-        }
-    }
-    else if (dynamic_cast<MinusVar*>(expr_base)) {
-        std::cout << "DEBUG: Apply::eval - detected MinusVar" << std::endl;
-        Variadic* variadic = dynamic_cast<Variadic*>(expr_base);
-        if (variadic) {
-            return variadic->evalRator(args);
-        }
-    }
-
+        ExprBase* expr_base = proc->e.get();
         if (dynamic_cast<PlusVar*>(expr_base) ||
             dynamic_cast<MinusVar*>(expr_base) ||
             dynamic_cast<MultVar*>(expr_base) ||
@@ -1195,32 +1174,16 @@ Value Define::eval(Assoc &env) {
 }
 
 Value Let::eval(Assoc &env) {
-    std::cout << "DEBUG: Let::eval - Starting with " << bind.size() << " bindings" << std::endl;
-    
     std::vector<Value> tmp;
     for(auto& binding : bind){
-        std::cout << "DEBUG: Evaluating binding for " << binding.first << std::endl;
         Value value = binding.second->eval(env);
-        std::cout << "DEBUG: Binding " << binding.first << " to value: ";
-        value->show(std::cout);
-        std::cout << std::endl;
         tmp.push_back(value);
     }
-    
     Assoc new_env = env;
     for (int i=0;i<tmp.size();++i) {
-        std::cout << "DEBUG: Extending environment with " << bind[i].first << " = ";
-        tmp[i]->show(std::cout);
-        std::cout << std::endl;
         new_env = extend(bind[i].first, tmp[i], new_env);
     }
-    
-    std::cout << "DEBUG: Evaluating let body" << std::endl;
     Value result = body->eval(new_env);
-    
-    std::cout << "DEBUG: Let::eval - Result: ";
-    result->show(std::cout);
-    std::cout << std::endl;
     return result;
 }
 
@@ -1264,16 +1227,22 @@ Value Display::evalRator(const Value &rand) { // display function
 //----------------------------------------------//
 Value createPrimitiveProcedure(ExprType type) {
     switch(type) {
+        
+        // 算术操作
         case E_PLUS:
-        std::cout << "DEBUG: Creating PlusVar primitive" << std::endl;
             return ProcedureV({}, Expr(new PlusVar({})), empty());
         case E_MINUS:
-         std::cout << "DEBUG: Creating MinusVar primitive" << std::endl;
             return ProcedureV({}, Expr(new MinusVar({})), empty());
         case E_MUL:
             return ProcedureV({}, Expr(new MultVar({})), empty());
         case E_DIV:
             return ProcedureV({}, Expr(new DivVar({})), empty());
+        case E_MODULO:
+            return ProcedureV({"a", "b"}, Expr(new Modulo(Expr(new Var("a")), Expr(new Var("b")))), empty());
+        case E_EXPT:
+            return ProcedureV({"a", "b"}, Expr(new Expt(Expr(new Var("a")), Expr(new Var("b")))), empty());
+            
+        // 比较操作
         case E_LT:
             return ProcedureV({}, Expr(new LessVar({})), empty());
         case E_LE:
@@ -1284,18 +1253,30 @@ Value createPrimitiveProcedure(ExprType type) {
             return ProcedureV({}, Expr(new GreaterEqVar({})), empty());
         case E_GT:
             return ProcedureV({}, Expr(new GreaterVar({})), empty());
-        case E_LIST:
-            return ProcedureV({}, Expr(new ListFunc({})), empty());
+            
+        // 列表操作
         case E_CONS:
             return ProcedureV({"a", "b"}, Expr(new Cons(Expr(new Var("a")), Expr(new Var("b")))), empty());
         case E_CAR:
             return ProcedureV({"p"}, Expr(new Car(Expr(new Var("p")))), empty());
         case E_CDR:
             return ProcedureV({"p"}, Expr(new Cdr(Expr(new Var("p")))), empty());
+        case E_LIST:
+            return ProcedureV({}, Expr(new ListFunc({})), empty());
         case E_SETCAR:
             return ProcedureV({"p", "v"}, Expr(new SetCar(Expr(new Var("p")), Expr(new Var("v")))), empty());
         case E_SETCDR:
             return ProcedureV({"p", "v"}, Expr(new SetCdr(Expr(new Var("p")), Expr(new Var("v")))), empty());
+            
+        // 逻辑操作
+        case E_NOT:
+            return ProcedureV({"v"}, Expr(new Not(Expr(new Var("v")))), empty());
+        case E_AND:
+            return ProcedureV({}, Expr(new AndVar({})), empty());
+        case E_OR:
+            return ProcedureV({}, Expr(new OrVar({})), empty());
+            
+        // 类型谓词
         case E_EQQ:
             return ProcedureV({"a", "b"}, Expr(new IsEq(Expr(new Var("a")), Expr(new Var("b")))), empty());
         case E_BOOLQ:
@@ -1314,17 +1295,18 @@ Value createPrimitiveProcedure(ExprType type) {
             return ProcedureV({"v"}, Expr(new IsList(Expr(new Var("v")))), empty());
         case E_STRINGQ:
             return ProcedureV({"v"}, Expr(new IsString(Expr(new Var("v")))), empty());
+            
+        // I/O 操作
         case E_DISPLAY:
             return ProcedureV({"v"}, Expr(new Display(Expr(new Var("v")))), empty());
+            
+        // 特殊值
         case E_VOID:
             return ProcedureV({}, Expr(new MakeVoid()), empty());
         case E_EXIT:
             return ProcedureV({}, Expr(new Exit()), empty());
-        case E_MODULO:
-            return ProcedureV({"a", "b"}, Expr(new Modulo(Expr(new Var("a")), Expr(new Var("b")))), empty());
-        case E_EXPT:
-            return ProcedureV({"a", "b"}, Expr(new Expt(Expr(new Var("a")), Expr(new Var("b")))), empty());
+            
         default:
-            throw RuntimeError("Unknown primitive procedure type");
+            throw RuntimeError("Unknown primitive procedure type: " + std::to_string(type));
     }
 }
