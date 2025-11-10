@@ -352,7 +352,7 @@ Value div(const Value &rand1, const Value &rand2)
     {
         auto ptr1 = dynamic_cast<Rational *>(rand1.get());
         auto ptr2 = dynamic_cast<Rational *>(rand2.get());
-        if (ptr1->denominator == 0 || ptr2->denominator == 0)
+        if (ptr1->denominator == 0 || ptr2->numerator == 0)
         {
             throw RuntimeError("Division by zero");
         }
@@ -390,7 +390,7 @@ Value div(const Value &rand1, const Value &rand2)
     {
         auto ptr1 = static_cast<Integer *>(rand1.get());
         auto ptr2 = static_cast<Rational *>(rand2.get());
-        if (ptr2->denominator == 0)
+        if (ptr2->denominator == 0||ptr2->numerator == 0)
         {
             throw RuntimeError("Division by zero");
         }
@@ -409,31 +409,20 @@ Value div(const Value &rand1, const Value &rand2)
         }
     }
     else if (type1 == V_RATIONAL && type2 == V_INT)
-    {
-        auto ptr1 = static_cast<Rational *>(rand1.get());
-        auto ptr2 = static_cast<Integer *>(rand2.get());
-        if (ptr1->denominator == 0)
-        {
-            throw RuntimeError("Division by zero");
-        }
-        int a = ptr2->n * ptr1->denominator;
-        int b = ptr1->numerator;
-        if (a == 0)
-        {
-            throw(RuntimeError("Division by zero"));
-        }
-        int g = gcd(b, a);
-        a = a / g;
-        b = b / g;
-        if (a != 1)
-        {
-            return RationalV(b, a);
-        }
-        else
-        {
-            return IntegerV(b);
-        }
-    }
+{
+    Rational* r1 = dynamic_cast<Rational*>(rand1.get());
+    int n2 = dynamic_cast<Integer*>(rand2.get())->n;
+    if (n2 == 0) throw RuntimeError("Division by zero");
+    
+    int numerator = r1->numerator;
+    int denominator = r1->denominator * n2;
+    int g = gcd(numerator, denominator);
+    numerator /= g;
+    denominator /= g;
+    
+    if (denominator == 1) return IntegerV(numerator);
+    else return RationalV(numerator, denominator);
+}
     return VoidV();
 }
 Value Plus::evalRator(const Value &rand1, const Value &rand2)
