@@ -91,10 +91,14 @@ Value Var::eval(Assoc &e)
 }
 static int gcd(int a, int b)
 {
-    if (a < 0)
-        a = -a;
-    if (b < 0)
-        b = -b;
+
+    if (a == 0 && b == 0) return 1;
+    if (a == 0) return (b < 0) ? -b : b;
+    if (b == 0) return (a < 0) ? -a : a;
+    
+    a = (a < 0) ? -a : a;
+    b = (b < 0) ? -b : b;
+    
     while (b != 0)
     {
         int temp = b;
