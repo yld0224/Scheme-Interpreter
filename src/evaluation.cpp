@@ -65,33 +65,15 @@ Value Variadic::eval(Assoc &e) {
     return evalRator(tmp);
 }//实现了一些eval求值
 
-int isNumber(const std::string& str) {
-    if (str.empty()) return -1;
-    std::istringstream iss(str);
-    int num;
-    if (iss >> num) {
-        if (iss.eof()) {
-            return num;
-        }
-    }
-    return -1;
-}//用来判断x是不是一个数字
+
 Value Var::eval(Assoc &e) { 
-    int num_result = isNumber(x);
-    if (num_result != -1) {
-        return IntegerV(num_result);
-    }
     Value matched_value = find(x, e);
     if (matched_value.get() != nullptr) {
-
-
         return matched_value;
     }
-    
     if (primitives.count(x)) {
         return createPrimitiveProcedure(primitives[x]);
     }
-    
     throw RuntimeError("Undefined variable: " + x);
 }
 static int gcd(int a, int b) {
@@ -103,54 +85,6 @@ static int gcd(int a, int b) {
         a = temp;
     }
     return a;
-}
-
-Value Plus::evalRator(const Value &rand1, const Value &rand2) {
-    ValueType type1=rand1->v_type;
-    ValueType type2=rand2->v_type;
-    if((type1!=V_RATIONAL&&type1!=V_INT)||(type2!=V_RATIONAL&&type2!=V_INT))
-    {
-        throw(RuntimeError("Wrong typename"));
-    }
-    else if(type1==V_RATIONAL&&type2==V_RATIONAL){
-        auto ptr1=dynamic_cast<Rational*>(rand1.get());
-        auto ptr2=dynamic_cast<Rational*>(rand2.get());
-        if(ptr1->denominator==0||ptr2->denominator==0){
-            throw(RuntimeError("Division by zero"));
-        }
-        int a=ptr1->numerator*ptr2->denominator+ptr1->denominator*ptr2->numerator;
-        int b=ptr1->denominator*ptr2->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-    else if(type1==V_INT&&type2==V_INT){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        int num=(ptr1->n)+(ptr2->n);
-        return IntegerV(num);
-    }
-    else if(type1==V_INT&&type2==V_RATIONAL){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Rational*>(rand2.get());
-        if(ptr2->denominator==0){throw(RuntimeError("Division by zero"));}
-        int a=ptr1->n*ptr2->denominator+ptr2->numerator;
-        int b=ptr2->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-     else if(type1==V_RATIONAL&&type2==V_INT){
-        auto ptr1=static_cast<Rational*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        if(ptr1->denominator==0){throw(RuntimeError("Division by zero"));}
-        int a=ptr2->n*ptr1->denominator+ptr1->numerator;
-        int b=ptr1->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-    return VoidV();
 }
 Value plus(const Value &rand1, const Value &rand2) {
     ValueType type1=rand1->v_type;
@@ -169,7 +103,9 @@ Value plus(const Value &rand1, const Value &rand2) {
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
+        if(b!=1){
+        return RationalV(a,b);}
+        else {return IntegerV(a);}
     }
     else if(type1==V_INT&&type2==V_INT){
         auto ptr1=static_cast<Integer*>(rand1.get());
@@ -185,7 +121,8 @@ Value plus(const Value &rand1, const Value &rand2) {
         int b=ptr2->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
+        if(b!=1){return RationalV(a,b);}
+        else return IntegerV(a);
     }
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
@@ -195,53 +132,9 @@ Value plus(const Value &rand1, const Value &rand2) {
         int b=ptr1->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-    return VoidV();
-}
-
-Value Minus::evalRator(const Value &rand1, const Value &rand2) { // -
-    ValueType type1=rand1->v_type;
-    ValueType type2=rand2->v_type;
-    if((type1!=V_RATIONAL&&type1!=V_INT)||(type2!=V_RATIONAL&&type2!=V_INT))
-    {
-        throw(RuntimeError("Wrong typename"));
-    }
-    else if(type1==V_RATIONAL&&type2==V_RATIONAL){
-        auto ptr1=dynamic_cast<Rational*>(rand1.get());
-        auto ptr2=dynamic_cast<Rational*>(rand2.get());
-        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr1->numerator*ptr2->denominator-ptr1->denominator*ptr2->numerator;
-        int b=ptr1->denominator*ptr2->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-    else if(type1==V_INT&&type2==V_INT){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        int num=(ptr1->n)-(ptr2->n);
-        return IntegerV(num);
-    }
-    else if(type1==V_INT&&type2==V_RATIONAL){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Rational*>(rand2.get());
-        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr1->n*ptr2->denominator-ptr2->numerator;
-        int b=ptr2->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-     else if(type1==V_RATIONAL&&type2==V_INT){
-        auto ptr1=static_cast<Rational*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr2->n*ptr1->denominator-ptr1->numerator;
-        int b=ptr1->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
+        if(b!=1){
+        return RationalV(a,b);}
+        else return IntegerV(a);
     }
     return VoidV();
 }
@@ -260,7 +153,8 @@ Value minus(const Value &rand1, const Value &rand2) { // -
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
+        if(b!=1){return RationalV(a,b);}
+        else return IntegerV(a);
     }
     else if(type1==V_INT&&type2==V_INT){
         auto ptr1=static_cast<Integer*>(rand1.get());
@@ -276,7 +170,9 @@ Value minus(const Value &rand1, const Value &rand2) { // -
         int b=ptr2->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
+        if(b!=1){
+        return RationalV(a,b);}
+        else return IntegerV(a);
     }
      else if(type1==V_RATIONAL&&type2==V_INT){
         auto ptr1=static_cast<Rational*>(rand1.get());
@@ -286,55 +182,8 @@ Value minus(const Value &rand1, const Value &rand2) { // -
         int b=ptr1->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-    return VoidV();
-}
-
-Value Mult::evalRator(const Value &rand1, const Value &rand2) { // *
-   ValueType type1=rand1->v_type;
-    ValueType type2=rand2->v_type;
-    if((type1!=V_RATIONAL&&type1!=V_INT)||(type2!=V_RATIONAL&&type2!=V_INT))
-    {
-        throw(RuntimeError("Wrong typename"));
-    }
-    else if(type1==V_RATIONAL&&type2==V_RATIONAL){
-        auto ptr1=dynamic_cast<Rational*>(rand1.get());
-        auto ptr2=dynamic_cast<Rational*>(rand2.get());
-        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr1->numerator*ptr2->numerator;
-        int b=ptr1->denominator*ptr2->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        return RationalV(a,b);
-    }
-    else if(type1==V_INT&&type2==V_INT){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        int num=(ptr1->n)*(ptr2->n);
-        return IntegerV(num);
-    }
-    else if(type1==V_INT&&type2==V_RATIONAL){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Rational*>(rand2.get());
-        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr1->n*ptr2->numerator;
-        int b=ptr2->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
         if(b!=1){return RationalV(a,b);}
-        else{return IntegerV(a);}
-    }
-     else if(type1==V_RATIONAL&&type2==V_INT){
-        auto ptr1=static_cast<Rational*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr2->n*ptr1->numerator;
-        int b=ptr1->denominator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        if(b!=1){return RationalV(a,b);}
-        else{return IntegerV(a);}
+        else return IntegerV(a);
     }
     return VoidV();
 }
@@ -353,7 +202,8 @@ Value mult(const Value &rand1, const Value &rand2) { // *
         int b=ptr1->denominator*ptr2->denominator;
         int g=gcd(a,b);
         a=a/g;b=b/g;
-        return RationalV(a,b);
+        if(b!=1){return RationalV(a,b);}
+        else return IntegerV(a);
     }
     else if(type1==V_INT&&type2==V_INT){
         auto ptr1=static_cast<Integer*>(rand1.get());
@@ -382,56 +232,6 @@ Value mult(const Value &rand1, const Value &rand2) { // *
         a=a/g;b=b/g;
         if(b!=1){return RationalV(a,b);}
         else{return IntegerV(a);}
-    }
-    return VoidV();
-}
-Value Div::evalRator(const Value &rand1, const Value &rand2) { // /
-    ValueType type1=rand1->v_type;
-    ValueType type2=rand2->v_type;
-    if((type1!=V_RATIONAL&&type1!=V_INT)||(type2!=V_RATIONAL&&type2!=V_INT))
-    {
-        throw(RuntimeError("Wrong typename"));
-    }
-    else if(type1==V_RATIONAL&&type2==V_RATIONAL){
-        auto ptr1=dynamic_cast<Rational*>(rand1.get());
-        auto ptr2=dynamic_cast<Rational*>(rand2.get());
-        if(ptr1->denominator==0||ptr2->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr1->numerator*ptr2->denominator;
-        int b=ptr1->denominator*ptr2->numerator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        if(b!=1){return RationalV(a,b);}
-        else{return IntegerV(a);}
-    }
-    else if(type1==V_INT&&type2==V_INT){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        int num=gcd(ptr1->n,ptr2->n);
-        if(ptr2->n==0){throw(RuntimeError("Division by zero"));}
-        if(num==ptr2->n){return IntegerV((ptr1->n)/num);}
-        else {return RationalV((ptr1->n)/num,(ptr2->n)/num);}
-    }
-    else if(type1==V_INT&&type2==V_RATIONAL){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Rational*>(rand2.get());
-        if(ptr2->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr1->n*ptr2->denominator;
-        int b=ptr2->numerator;
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        if(b!=1){return RationalV(a,b);}
-        else{return IntegerV(a);}
-    }
-     else if(type1==V_RATIONAL&&type2==V_INT){
-        auto ptr1=static_cast<Rational*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        if(ptr1->denominator==0){throw RuntimeError("Division by zero");}
-        int a=ptr2->n*ptr1->denominator;
-        int b=ptr1->numerator;
-        if(a==0){throw(RuntimeError("Division by zero"));}
-        int g=gcd(a,b);
-        a=a/g;b=b/g;
-        {return RationalV(b,a);}
     }
     return VoidV();
 }
@@ -454,12 +254,15 @@ Value div(const Value &rand1, const Value &rand2) { // /
         else{return IntegerV(a);}
     }
     else if(type1==V_INT&&type2==V_INT){
-        auto ptr1=static_cast<Integer*>(rand1.get());
-        auto ptr2=static_cast<Integer*>(rand2.get());
-        int num=gcd(ptr1->n,ptr2->n);
-        if(ptr2->n==0){throw(RuntimeError("Division by zero"));}
-        if(ptr1->n%ptr2->n==0){return IntegerV((ptr1->n)/(ptr2->n));}
-        else {return RationalV((ptr1->n)/num,(ptr2->n)/num);}
+        int n1 = dynamic_cast<Integer*>(rand1.get())->n;
+        int n2 = dynamic_cast<Integer*>(rand2.get())->n;
+        if(n2 == 0) throw RuntimeError("Division by zero");
+        if(n1 % n2 == 0){
+            return IntegerV(n1 / n2);
+        } else {
+            int g = gcd(n1, n2);
+            return RationalV(n1/g, n2/g);
+        }
     }
     else if(type1==V_INT&&type2==V_RATIONAL){
         auto ptr1=static_cast<Integer*>(rand1.get());
@@ -479,12 +282,29 @@ Value div(const Value &rand1, const Value &rand2) { // /
         int a=ptr2->n*ptr1->denominator;
         int b=ptr1->numerator;
         if(a==0){throw(RuntimeError("Division by zero"));}
-        int g=gcd(a,b);
+        int g=gcd(b,a);
         a=a/g;b=b/g;
-        {return RationalV(b,a);}
+        if(a!=1){return RationalV(b,a);}
+        else{return IntegerV(b);}
     }
     return VoidV();
 }
+Value Plus::evalRator(const Value &rand1, const Value &rand2) {
+   return plus(rand1,rand2);
+}
+
+Value Minus::evalRator(const Value &rand1, const Value &rand2) { 
+   return minus(rand1,rand2);
+}
+
+Value Mult::evalRator(const Value &rand1, const Value &rand2) { 
+   return mult(rand1,rand2);
+}
+
+Value Div::evalRator(const Value &rand1, const Value &rand2) { 
+   return div(rand1,rand2);
+}
+
 Value Modulo::evalRator(const Value &rand1, const Value &rand2) { // modulo
     if (rand1->v_type == V_INT && rand2->v_type == V_INT) {
         int dividend = dynamic_cast<Integer*>(rand1.get())->n;
@@ -517,7 +337,7 @@ Value PlusVar::evalRator(const std::vector<Value> &args) {
 }
 
 Value MinusVar::evalRator(const std::vector<Value> &args) {
-    if(args.size()==0){throw "Runtime Error";} // - with multiple args
+    if(args.size()==0){throw RuntimeError("minus:num needed");} // - with multiple args
     else if(args.size()==1){
         if(args[0]->v_type==V_INT){
             auto ptr=dynamic_cast<Integer*>(args[0].get());
@@ -559,17 +379,19 @@ Value MultVar::evalRator(const std::vector<Value> &args) {
 }
 
 Value DivVar::evalRator(const std::vector<Value> &args) {
-    if(args.size()==0){throw "Runtime Error";} // / with multiple args
+    if(args.size()==0){throw RuntimeError("div:num needed");}
     else if(args.size()==1){
-        auto ptr=dynamic_cast<Rational*>(args[0].get());
-        if(ptr!=nullptr){
-            if(ptr->denominator==0){throw RuntimeError("Division by zero");}
+        Value arg = args[0];
+        if(arg->v_type == V_INT){
+            int n = dynamic_cast<Integer*>(arg.get())->n;
+            if(n == 0) throw RuntimeError("Division by zero");
+            return RationalV(1, n); 
         }
-        auto ptr1=dynamic_cast<Integer*>(args[0].get());
-        if(ptr1!=nullptr){
-            if(ptr1->n==0){throw RuntimeError("Division by zero");}
+        else if(arg->v_type == V_RATIONAL){
+            Rational* r = dynamic_cast<Rational*>(arg.get());
+            if(r->numerator == 0) throw RuntimeError("Division by zero");
+            return RationalV(r->denominator, r->numerator);
         }
-        return div(IntegerV(1),args[0]);
     }
     else if(args.size()==2){return div(args[0],args[1]);}
     else {
@@ -742,6 +564,7 @@ Value LessEqVar::evalRator(const std::vector<Value> &args) {
 }
 
 Value EqualVar::evalRator(const std::vector<Value> &args) {
+    if(args.empty()){return BooleanV(true);}
     for(int i=0;i<args.size();++i){
         if(args[i]->v_type!=V_RATIONAL&&args[i]->v_type!=V_INT){
             throw(RuntimeError("Wrong typename"));

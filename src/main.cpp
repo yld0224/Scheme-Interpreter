@@ -6,11 +6,10 @@
 #include <sstream>
 #include <iostream>
 #include <map>
-
+Assoc global_env = empty();
 extern std::map<std::string, ExprType> primitives;
 extern std::map<std::string, ExprType> reserved_words;
 
-Assoc global_env = empty();
 bool isExplicitVoidCall(Expr expr) {
     MakeVoid* make_void_expr = dynamic_cast<MakeVoid*>(expr.get());
     if (make_void_expr != nullptr) {
@@ -45,33 +44,32 @@ bool isExplicitVoidCall(Expr expr) {
     }
     return false;
 }
+
 void REPL(){
+    // read - evaluation - print loop
+    
     while (1){
         #ifndef ONLINE_JUDGE
             std::cout << "scm> ";
         #endif
-        Syntax stx = readSyntax(std :: cin);
+        Syntax stx = readSyntax(std :: cin); // read
         try{
-            Expr expr = stx -> parse(global_env);
+            Expr expr = stx -> parse(global_env); // parse
+            // stx -> show(std :: cout); // syntax print
             Value val = expr -> eval(global_env);
             if (val -> v_type == V_TERMINATE)
-            {break;}
-            if (val->v_type != V_VOID || expr->e_type == E_VOID) {
-                val->show(std :: cout);
-                std::cout<<std::endl;
-            }
+                break;
+            val -> show(std :: cout); // value print
         }
         catch (const RuntimeError &RE){
-            std::cout << "RuntimeError";
+            // std :: cout << RE.message();
+            std :: cout << "RuntimeError";
         }
-        catch (const std::exception &e) {
-            std::cout << "Std exception";
-        }
-        catch (...) {
-            std::cout << "Unknown exception";
-        }
+        puts("");
     }
 }
+
+
 int main(int argc, char *argv[]) {
     REPL();
     return 0;

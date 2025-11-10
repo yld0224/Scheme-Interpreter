@@ -35,9 +35,9 @@ enum ExprType {
     E_RATIONAL,        
     E_STRING,         
     E_TRUE,            
-    E_FALSE,           
-    E_VOID,          
-    E_EXIT,         
+    E_FALSE,
+    E_EXIT,
+    E_VOID,                             
 
     // Arithmetic operations
     E_PLUS,
@@ -121,5 +121,4 @@ enum ValueType {
     V_VOID,            
     V_TERMINATE        
 };
-
 #endif // DEF_HPP
