@@ -249,7 +249,7 @@ Value minus(const Value &rand1, const Value &rand2)
         {
             throw RuntimeError("Division by zero");
         }
-        int a = ptr2->n * ptr1->denominator - ptr1->numerator;
+        int a = ptr1->numerator - ptr2->n * ptr1->denominator;
         int b = ptr1->denominator;
         int g = gcd(a, b);
         a = a / g;
