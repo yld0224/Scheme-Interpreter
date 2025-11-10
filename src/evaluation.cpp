@@ -799,7 +799,7 @@ Value LessVar::evalRator(const std::vector<Value> &args)
     } // < with multiple args
     if (args.empty()||args.size()==1)
     {
-        return BooleanV(true);
+        throw RuntimeError("Invalid params");
     }
     for (int i = 0; i < args.size() - 1; ++i)
     {
@@ -822,7 +822,7 @@ Value LessEqVar::evalRator(const std::vector<Value> &args)
     } // <= with multiple args
     if (args.empty()||args.size()==1)
     {
-        return BooleanV(true);
+       throw RuntimeError("Invalid params");
     }
     for (int i = 0; i < args.size() - 1; ++i)
     {
@@ -845,7 +845,7 @@ Value EqualVar::evalRator(const std::vector<Value> &args)
     } 
     if (args.empty()||args.size()==1)
     {
-        return BooleanV(true);
+        throw RuntimeError("Invalid params");
     }// = with multiple args
     for (int i = 0; i < args.size() - 1; ++i)
     {
@@ -868,7 +868,7 @@ Value GreaterEqVar::evalRator(const std::vector<Value> &args)
     }
     if (args.empty()||args.size()==1)
     {
-        return BooleanV(true);
+        throw RuntimeError("Invalid params");
     } // >= with multiple args
     for (int i = 0; i < args.size() - 1; ++i)
     {
@@ -891,7 +891,7 @@ Value GreaterVar::evalRator(const std::vector<Value> &args)
     }
     if (args.empty()||args.size()==1)
     {
-        return BooleanV(true);
+        throw RuntimeError("Invalid params");
     } // > with multiple args
     for (int i = 0; i < args.size() - 1; ++i)
     {
