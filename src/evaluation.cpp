@@ -605,6 +605,7 @@ Value DivVar::evalRator(const std::vector<Value> &args)
         }
         return sum;
     }
+    return VoidV();
 }
 
 Value Expt::evalRator(const Value &rand1, const Value &rand2)

@@ -57,6 +57,7 @@ void REPL(){
             Expr expr = stx -> parse(global_env); // parse
             // stx -> show(std :: cout); // syntax print
             Value val = expr -> eval(global_env);
+            if(expr->e_type!=E_VOID&&val->v_type==V_VOID){continue;}
             if (val -> v_type == V_TERMINATE)
                 break;
             val -> show(std :: cout); // value print

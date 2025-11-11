@@ -59,14 +59,7 @@ Expr List::parse(Assoc &env) {
         return Expr(new ListFunc(vector<Expr>()));
     }
     SymbolSyntax *id = dynamic_cast<SymbolSyntax*>(stxs[0].get());
-
-    if(id!=nullptr){
-        if(id->s=="void"){return Expr(new MakeVoid());}
-    }
-    StringSyntax *ptr=dynamic_cast<StringSyntax*>(stxs[0].get());
-     if(ptr!=nullptr){
-        if(ptr->s=="void"){return Expr(new MakeVoid());}
-    }
+   
     
     if (id == nullptr) {
         vector<Expr> parameters;
@@ -277,6 +270,16 @@ Expr List::parse(Assoc &env) {
                 body = Expr(new Begin(body_exprs));
             }
             return Expr(new Letrec(bindings, body));
+        } 
+    }
+    if(primitives.count(op)){
+        if(op=="void"){
+            if(stxs.size()>1){throw RuntimeError("no params intended");}
+            return Expr(new MakeVoid());
+        }
+        if(op=="exit"){
+            if(stxs.size()>1){throw RuntimeError("no params intended");}
+            else {return Expr(new Exit());}
         }
     }
         vector<Expr> parameters;
