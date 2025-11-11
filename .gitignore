@@ -29,3 +29,7 @@
 # Executables
 *.exe
 *.app
+
+#构建输出
+/build
+/score
