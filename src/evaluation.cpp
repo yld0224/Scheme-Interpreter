@@ -1167,25 +1167,19 @@ Value Quote::eval(Assoc &e)
     return syntaxToQuotedValue(s);
 }
 
-Value AndVar::eval(Assoc &e)
-{
-    if (rands.empty())
-    {
-        return BooleanV(true);
-    } // and with short-circuit evaluation
-    for (auto expr : rands)
-    {
-        Value value = expr->eval(e);
-        auto ptr = dynamic_cast<Boolean *>(value.get());
-        if (ptr != nullptr)
-        {
-            if (ptr->b == false)
-            {
+Value AndVar::eval(Assoc &e) {
+    if(rands.empty()){return BooleanV(true);}
+    Value result(nullptr);
+    for(auto expr:rands){
+        result = expr->eval(e);
+        if (result->v_type == V_BOOL) {
+            Boolean* bool_ptr = dynamic_cast<Boolean*>(result.get());
+            if (bool_ptr && !bool_ptr->b) {
                 return BooleanV(false);
             }
         }
     }
-    return rands.back()->eval(e);
+    return result; 
 }
 
 Value OrVar::eval(Assoc &e)

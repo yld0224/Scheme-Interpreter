@@ -47,26 +47,34 @@ bool isExplicitVoidCall(Expr expr) {
 
 void REPL(){
     // read - evaluation - print loop
-    
-    while (1){
+    Assoc global_env = empty();
+    bool flag=true;
+    while (1){ 
         #ifndef ONLINE_JUDGE
-            std::cout << "scm> ";
+        if(flag)std::cout<<"scm> ";
         #endif
-        Syntax stx = readSyntax(std :: cin); // read
+        Syntax stx = readSyntax(std :: cin);
         try{
-            Expr expr = stx -> parse(global_env); // parse
-            // stx -> show(std :: cout); // syntax print
+            Expr expr = stx -> parse(global_env);
             Value val = expr -> eval(global_env);
-            if(expr->e_type!=E_VOID&&val->v_type==V_VOID){continue;}
             if (val -> v_type == V_TERMINATE)
-                break;
-            val -> show(std :: cout); // value print
+                {break;}
+            
+            if(
+                expr->e_type==E_VOID||val->v_type!=V_VOID||
+                expr->e_type==E_BEGIN||expr->e_type==E_IF||
+                expr->e_type==E_APPLY||expr->e_type==E_COND
+            ){
+                val -> show(std :: cout);
+                flag=true;
+            }
+            else{flag=false;}
         }
         catch (const RuntimeError &RE){
-            // std :: cout << RE.message();
-            std :: cout << "RuntimeError";
+            std :: cout << "RuntimeError"<<std::endl;
+            continue;
         }
-        puts("");
+        if(flag)puts("");
     }
 }
 
