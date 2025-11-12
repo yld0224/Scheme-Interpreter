@@ -1249,7 +1249,7 @@ Value Cond::eval(Assoc &env)
 {
     if (clauses.empty())
     {
-        return VoidV();
+       throw RuntimeError("Cond:params needed");        
     }
     for (auto &clause : clauses)
     {

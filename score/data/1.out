@@ -1,14 +1,25 @@
-#f
-3
-#f
 0
-1
-1
-#f
-#t
-#f
-#t
-#t
-#t
-#t
-#f
+2
+3
+5
+10
+20
+0
+"true branch"
+"only else"
+RuntimeError
+"true branch"
+"A"
+"B"
+"C"
+"D"
+"F"
+"child"
+"teenager"
+"adult"
+"senior"
+"only else"
+"Stay inside!"
+"Wear a coat"
+"Nice weather"
+"It's hot!"

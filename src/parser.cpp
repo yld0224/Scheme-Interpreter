@@ -300,6 +300,22 @@ Expr List::parse(Assoc &env) {
             parameter=stxs[1]->parse(env);
             return Expr(new Not(parameter));
         }
+        if(op=="set-car!"){
+            vector<Expr> parameters;
+            if(stxs.size()!=3){throw RuntimeError("set-car:two params needed");}
+            for(int i=1;i<=2;++i){
+                parameters.push_back(stxs[i]->parse(env));
+            }
+            return Expr(new SetCar(parameters[0],parameters[1]));
+        }
+        if(op=="set-cdr!"){
+            vector<Expr> parameters;
+            if(stxs.size()!=3){throw RuntimeError("set-cdr:two params needed");}
+            for(int i=1;i<=2;++i){
+                parameters.push_back(stxs[i]->parse(env));
+            }
+            return Expr(new SetCdr(parameters[0],parameters[1]));
+        }
     }
         vector<Expr> parameters;
         for(int i=1;i<stxs.size();++i){
