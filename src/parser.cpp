@@ -59,8 +59,7 @@ Expr List::parse(Assoc &env) {
         return Expr(new ListFunc(vector<Expr>()));
     }
     SymbolSyntax *id = dynamic_cast<SymbolSyntax*>(stxs[0].get());
-   
-    
+
     if (id == nullptr) {
         vector<Expr> parameters;
         for(int i=1;i<stxs.size();++i){
@@ -280,6 +279,26 @@ Expr List::parse(Assoc &env) {
         if(op=="exit"){
             if(stxs.size()>1){throw RuntimeError("no params intended");}
             else {return Expr(new Exit());}
+        }
+        if(op=="and"){
+            vector<Expr> parameters;
+            for(int i=1;i<stxs.size();++i){
+                parameters.push_back(stxs[i]->parse(env));
+            }
+            return Expr(new AndVar(parameters));
+        }
+        if(op=="or"){
+            vector<Expr> parameters;
+            for(int i=1;i<stxs.size();++i){
+                parameters.push_back(stxs[i]->parse(env));
+            }
+            return Expr(new OrVar(parameters));
+        }
+        if(op=="not"){
+            Expr parameter(nullptr);
+            if(stxs.size()!=2){throw RuntimeError("not:one param needed");}
+            parameter=stxs[1]->parse(env);
+            return Expr(new Not(parameter));
         }
     }
         vector<Expr> parameters;

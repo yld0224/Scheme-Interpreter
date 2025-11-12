@@ -63,7 +63,7 @@ void REPL(){
             if(
                 expr->e_type==E_VOID||val->v_type!=V_VOID||
                 expr->e_type==E_BEGIN||expr->e_type==E_IF||
-                expr->e_type==E_APPLY||expr->e_type==E_COND
+                expr->e_type==E_COND||expr->e_type==E_APPLY
             ){
                 val -> show(std :: cout);
                 flag=true;
@@ -74,12 +74,13 @@ void REPL(){
             std :: cout << "RuntimeError"<<std::endl;
             continue;
         }
-        if(flag)puts("");
+        if(flag)std::cout<<std::endl;
     }
 }
 
 
 int main(int argc, char *argv[]) {
     REPL();
+    std::cout<<std::endl;
     return 0;
 }

@@ -1173,10 +1173,8 @@ Value AndVar::eval(Assoc &e) {
     for(auto expr:rands){
         result = expr->eval(e);
         if (result->v_type == V_BOOL) {
-            Boolean* bool_ptr = dynamic_cast<Boolean*>(result.get());
-            if (bool_ptr && !bool_ptr->b) {
-                return BooleanV(false);
-            }
+            Boolean* ptr = dynamic_cast<Boolean*>(result.get());
+            if(ptr->b==false){return BooleanV(false);}
         }
     }
     return result; 
@@ -1519,7 +1517,8 @@ Value Display::evalRator(const Value &rand)
     {
         rand->show(std::cout);
     }
-    return VoidV();
+    std::cout<<std::endl;
+    return TerminateV();
 }
 //---------------将原始过程转换-------------------//
 //----------------------------------------------//
