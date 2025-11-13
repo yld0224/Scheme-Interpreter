@@ -1,24 +1,2 @@
-1,5c1,5
-< RuntimeError
-< RuntimeError
-< RuntimeError
-< RuntimeError
-< RuntimeError
----
-> #t
-> #f
-> #f
-> #t
-> 30
-12,14c12,14
-< RuntimeError
-< RuntimeError
-< RuntimeError
----
-> 7
-> 8
-> 9
-33c33
-< RuntimeError
----
-> #t
+39a40
+> 

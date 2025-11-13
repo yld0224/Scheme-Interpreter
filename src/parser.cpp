@@ -157,16 +157,16 @@ Expr List::parse(Assoc &env) {
             auto varSym = dynamic_cast<SymbolSyntax*>(stxs[1].get());
             if(varSym!=nullptr){
                 vector<Expr> parameters;
-                for(int i=1;i<stxs.size();++i){
+                for(int i=2;i<stxs.size();++i){
                     parameters.push_back(stxs[i]->parse(env));
                 }
-                if(parameters.size()!=2){throw RuntimeError("define: only 1 var can be defined");}
-                return Expr(new Define(varSym->s,parameters[1]));
+                if(parameters.size()!=1){throw RuntimeError("define: only 1 var can be defined");}
+                return Expr(new Define(varSym->s,parameters[0]));
             }//定义的是一个变量
             else{
                 auto funcDef = dynamic_cast<List*>(stxs[1].get());
                 if (funcDef==nullptr || funcDef->stxs.empty()) {
-                    throw RuntimeError("define: malformed function definition");
+                    throw RuntimeError("define: invalid function definition");
                 }
                 auto funcNameSym = dynamic_cast<SymbolSyntax*>(funcDef->stxs[0].get());
                 if (funcNameSym==nullptr) {

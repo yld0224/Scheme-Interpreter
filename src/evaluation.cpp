@@ -1074,10 +1074,40 @@ Value Begin::eval(Assoc &e)
     {
         return VoidV();
     }
+
+    // 如果 begin 中包含内部 define，则需要把这些 define 的名字预先绑定到同一个局部环境中，
+    // 以实现 letrec 的语义，让这些 define 相互可见（包括嵌套的局部 define）。
+    bool has_define = false;
+    for (auto &expr : es) {
+        if (dynamic_cast<Define *>(expr.get()) != nullptr) {
+            has_define = true;
+            break;
+        }
+    }
+
+    if (!has_define) {
+        Value result = VoidV();
+        for (auto &expr : es) {
+            result = expr->eval(e);
+        }
+        return result;
+    }
+
+    // 构造 new_env，并在 new_env 上预绑定所有 define 名称（占位 NullV）
+    Assoc new_env = e;
+    for (auto &expr : es) {
+        Define *d = dynamic_cast<Define *>(expr.get());
+        if (d != nullptr) {
+            if (find(d->var, new_env).get() == nullptr) {
+                new_env = extend(d->var, NullV(), new_env);
+            }
+        }
+    }
+
+    // 在 new_env 上顺序求值整个 begin 的表达式序列，定义会写回 new_env（或更新占位）
     Value result = VoidV();
-    for (auto &expr : es)
-    {
-        result = expr->eval(e);
+    for (auto &expr : es) {
+        result = expr->eval(new_env);
     }
     return result;
 }
@@ -1321,9 +1351,9 @@ Value Apply::eval(Assoc &env)
     Procedure *proc = dynamic_cast<Procedure *>(proc_value.get());
     if (proc == nullptr)
     {
-        throw RuntimeError("Invalid procedure object: expected procedure, got ");
+        throw RuntimeError("Invalid procedure object: expected procedure");
     }
-    if (proc->env.get() == nullptr)
+    if (proc->env.get() == nullptr)//承接部分parser的功能
     {
         ExprBase *expr_base = proc->e.get();
         if (dynamic_cast<PlusVar *>(expr_base) ||
@@ -1398,7 +1428,7 @@ Value Apply::eval(Assoc &env)
                 throw RuntimeError("Wrong number of arguments for binary operation");
             }
         }
-        else
+        else//使用临时空环境来apply
         {
             Assoc temp_env = empty();
             for (size_t i = 0; i < args.size() && i < proc->parameters.size(); ++i)
@@ -1408,7 +1438,7 @@ Value Apply::eval(Assoc &env)
             return proc->e->eval(temp_env);
         }
     }
-    else
+    else//proc里面存在env
     {
         if (args.size() != proc->parameters.size())
         {
@@ -1440,14 +1470,12 @@ Value Define::eval(Assoc &env)
     Value existing = find(var, env);
     if (existing.get() != nullptr)
     {
-        // 重新定义
         Value value = e->eval(env);
         modify(var, value, env);
     }
     else
     {
-        // 新定义
-        env = extend(var, VoidV(), env);
+        env = extend(var, NullV(), env);
         Value value = e->eval(env);
         modify(var, value, env);
     }
