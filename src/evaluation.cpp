@@ -1437,7 +1437,6 @@ Value Define::eval(Assoc &env)
         throw RuntimeError("Cannot use reserved word as variable: " + var);
     }
 
-    // 使用更安全的环境查找
     Value existing = find(var, env);
     if (existing.get() != nullptr)
     {
@@ -1481,7 +1480,7 @@ Value Letrec::eval(Assoc &env)
     Assoc new_env = env;
     for (auto &binding : bind)
     {
-        new_env = extend(binding.first, VoidV(), new_env);
+        new_env = extend(binding.first, NullV(), new_env);
     }
     for (auto &binding : bind)
     {

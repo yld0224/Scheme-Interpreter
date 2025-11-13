@@ -1,73 +1,102 @@
-(define (fee age)
-  (cond
-   ((or (<= age 3) (>= age 65)) 0)
-   ((<= 4 age 6) 2)
-   ((<= 7 age 12) 3)
-   ((<= 13 age 15) 5)
-   ((<= 16 age 18) 10)
-   (else 20)))
+(set! undefined_var 123) 
+(define x 42)
+x
+(set! x 100)
+x
+(define y "hello")
+y
 
-(fee 2)   
-(fee 5)  
-(fee 10) 
-(fee 14) 
-(fee 17)  
-(fee 25)  
-(fee 70)  
+(define a 10)
+a
+(set! a 20)
+a
+(set! a (* a 2))
+a
 
+(define str "original")
+str
+(set! str "modified")
+str
 
-(cond
-  (#f "false branch")
-  (#t "true branch")
-  (else "else branch"))
+(define bool #t)
+bool
+(set! bool #f)
+bool
 
-(cond
-  (else "only else"))
+(define lst '(1 2 3))
+lst
+(set! lst '(4 5 6))
+lst
 
-(cond)
+(define counter 0)
+(define (increment!)
+  (set! counter (+ counter 1))
+  counter)
 
-(cond
- (#f "false branch")
- (#t "true branch")
- (else "else branch"))
+counter
+(increment!)
+(increment!)
+counter
 
-(define (grade score)
-  (cond
-   ((>= score 90) "A")
-   ((>= score 80) "B")
-   ((>= score 70) "C")
-   ((>= score 60) "D")
-   (else "F")))
+(define make-counter
+  (lambda (init)
+    (lambda ()
+      (set! init (+ init 1))
+      init)))
 
-(grade 95)
-(grade 85)
-(grade 75)
-(grade 65)
-(grade 50)
+(define c1 (make-counter 10))
+(define c2 (make-counter 100))
 
-(define (age-group age)
-  (cond
-   ((<= age 12) "child")
-   ((<= age 19) "teenager")
-   ((<= age 59) "adult")
-   (else "senior")))
+(c1)
+(c1)
+(c2)
+(c1)
+(c2)
 
-(age-group 8)
-(age-group 16)
-(age-group 35)
-(age-group 70)
+(define outer-var 5)
+(define (test-scope)
+  (define inner-var 15)
+  (set! outer-var (* outer-var 2))
+  (set! inner-var (* inner-var 3))
+  (list outer-var inner-var))
 
-(cond (else "only else"))
+outer-var
+(test-scope)
+outer-var
 
-(define (weather-advice temp)
-  (cond
-   ((< temp 0) "Stay inside!")
-   ((< temp 10) "Wear a coat")
-   ((< temp 25) "Nice weather")
-   (else "It's hot!")))
+(define chain 1)
+chain
+(set! chain 2)
+(set! chain 3)
+(set! chain 4)
+chain
 
-(weather-advice -5)
-(weather-advice 5)
-(weather-advice 20)
-(weather-advice 30)
+(define temp 0)
+(set! temp 42)
+
+(define complex-var 1)
+(define (modify-and-return x)
+  (set! complex-var (+ complex-var x))
+  complex-var)
+
+(modify-and-return 5)
+(modify-and-return 10)
+complex-var
+
+(define global-sum 0)
+(define (accumulate-sum n)
+  (if (<= n 0)
+      global-sum
+      (begin
+        (set! global-sum (+ global-sum n))
+        (accumulate-sum (- n 1)))))
+
+global-sum
+(accumulate-sum 5)
+global-sum
+
+(set! global-sum 0)
+(accumulate-sum 3)
+global-sum
+
 (exit)

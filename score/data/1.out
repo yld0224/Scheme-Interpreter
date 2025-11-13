@@ -1,25 +1,35 @@
-0
-2
-3
-5
+RuntimeError
+42
+100
+"hello"
 10
 20
+40
+"original"
+"modified"
+#t
+#f
+(1 2 3)
+(4 5 6)
 0
-"true branch"
-"only else"
-RuntimeError
-"true branch"
-"A"
-"B"
-"C"
-"D"
-"F"
-"child"
-"teenager"
-"adult"
-"senior"
-"only else"
-"Stay inside!"
-"Wear a coat"
-"Nice weather"
-"It's hot!"
+1
+2
+2
+11
+12
+101
+13
+102
+5
+(10 45)
+10
+1
+4
+6
+16
+16
+0
+15
+15
+6
+6

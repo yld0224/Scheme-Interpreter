@@ -134,9 +134,13 @@ Expr List::parse(Assoc &env) {
                 }
                 params.push_back(sym->s);
             }
+            Assoc new_env = env;
+            for (const auto& param : params) {
+                new_env = extend(param, NullV(), new_env);
+            }
             vector<Expr> bodyExprs;
             for (int i = 2; i < stxs.size(); ++i) {
-                bodyExprs.push_back(stxs[i]->parse(env));
+                bodyExprs.push_back(stxs[i]->parse(new_env));
             }
             Expr body(nullptr);
             if (bodyExprs.size() == 1) {
@@ -145,7 +149,7 @@ Expr List::parse(Assoc &env) {
                 body = Expr(new Begin(bodyExprs));
             }
             return Expr(new Lambda(params, body));
-        }
+        }   
         if(op=="define"){
             if(stxs.size()<3){
                 throw RuntimeError("define: requires at least 2 augments");
@@ -197,7 +201,7 @@ Expr List::parse(Assoc &env) {
             auto varSym = dynamic_cast<SymbolSyntax*>(stxs[1].get());
             if (varSym==nullptr) {
                 throw RuntimeError("set!: first argument must be a variable");
-            }
+            };
             Expr value =stxs[2]->parse(env);
             return Expr(new Set(varSym->s, value));
         }     
@@ -222,9 +226,13 @@ Expr List::parse(Assoc &env) {
                 Expr value_expr = binding->stxs[1]->parse(env);
                 bindings.push_back({var_sym->s, value_expr});
             }
+            Assoc new_env = env;
+            for (const auto& binding : bindings) {
+                new_env = extend(binding.first, NullV(), new_env);
+            }
             std::vector<Expr> body_exprs;
             for (size_t i = 2; i < stxs.size(); i++) {
-                body_exprs.push_back(stxs[i]->parse(env));
+                body_exprs.push_back(stxs[i]->parse(new_env));
             }
             Expr body(nullptr);
             if (body_exprs.size() == 1) {
