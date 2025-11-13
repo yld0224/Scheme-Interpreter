@@ -1,23 +1,24 @@
-1c1
-< 123
+1,5c1,5
+< RuntimeError
+< RuntimeError
+< RuntimeError
+< RuntimeError
+< RuntimeError
 ---
-> RuntimeError
-4d3
-< 100
-8,9d6
-< 20
-< 40
-13d9
-< "modified"
-16d11
-< #f
-19d13
-< (4 5 6)
-33,35d26
-< 2
-< 3
-< 4
-37d27
-< 42
-44d33
-< 0
+> #t
+> #f
+> #f
+> #t
+> 30
+12,14c12,14
+< RuntimeError
+< RuntimeError
+< RuntimeError
+---
+> 7
+> 8
+> 9
+33c33
+< RuntimeError
+---
+> #t

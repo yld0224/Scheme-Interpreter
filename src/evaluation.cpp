@@ -1492,17 +1492,11 @@ Value Letrec::eval(Assoc &env)
 
 Value Set::eval(Assoc &env)
 {
-    try
-    {
-        find(var, env);
-    }
-    catch (const RuntimeError &)
-    {
-        throw RuntimeError("Variable not found: " + var);
-    }
+    Value val=find(var, env);
+    if(val.get()==nullptr){throw RuntimeError("Variable not found: " + var);}
     Value new_value = e->eval(env);
     modify(var, new_value, env);
-    return new_value;
+    return VoidV();
 }
 
 Value Display::evalRator(const Value &rand)
